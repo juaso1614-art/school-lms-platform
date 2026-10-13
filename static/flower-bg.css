@@ -12,7 +12,7 @@
 .flower-bg .petal {
   position: absolute;
   display: block;
-  opacity: 0.16;
+  opacity: 0.3;
   will-change: transform;
   animation: flower-float var(--dur, 30s) infinite ease-in-out;
   animation-delay: var(--delay, 0s);

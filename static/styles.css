@@ -132,7 +132,7 @@ main {
 .hero {
   overflow: hidden;
   color: #ffffff;
-  background: linear-gradient(118deg, #102d43 0%, #164b6a 72%, #1763bd 130%);
+  background: linear-gradient(118deg, rgba(16, 45, 67, 0.82) 0%, rgba(22, 75, 106, 0.82) 72%, rgba(23, 99, 189, 0.82) 130%);
 }
 
 .hero-inner {
