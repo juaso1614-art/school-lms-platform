@@ -28,7 +28,7 @@ html {
 body {
   margin: 0;
   color: var(--ink);
-  background: var(--paper);
+  background: transparent;
   font-family: Inter, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.6;
@@ -124,6 +124,8 @@ nav a:hover {
 }
 
 main {
+  position: relative;
+  z-index: 1;
   min-height: 65vh;
 }
 
@@ -832,6 +834,8 @@ textarea:focus {
 }
 
 .site-footer {
+  position: relative;
+  z-index: 1;
   padding-block: 42px;
   color: #d6e4eb;
   background: #102d43;

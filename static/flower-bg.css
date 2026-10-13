@@ -1,0 +1,55 @@
+/* Animated colourful flower background — sits behind all page content */
+
+.flower-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(135deg, #f3f7f8 0%, #eef6f3 40%, #f0f4ff 100%);
+}
+
+.flower-bg .petal {
+  position: absolute;
+  display: block;
+  opacity: 0.16;
+  will-change: transform;
+  animation: flower-float var(--dur, 30s) infinite ease-in-out;
+  animation-delay: var(--delay, 0s);
+}
+
+.flower-bg .petal.spin {
+  animation: flower-spin var(--dur, 30s) infinite linear;
+  animation-delay: var(--delay, 0s);
+}
+
+.flower-bg .petal.drift {
+  animation: flower-drift var(--dur, 40s) infinite ease-in-out;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes flower-float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25%      { transform: translate(40px, -50px) rotate(90deg) scale(1.1); }
+  50%      { transform: translate(-30px, -100px) rotate(180deg) scale(0.95); }
+  75%      { transform: translate(-50px, -50px) rotate(270deg) scale(1.05); }
+}
+
+@keyframes flower-spin {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes flower-drift {
+  0%, 100% { transform: translate(0, 0) rotate(-15deg); }
+  50%      { transform: translate(60px, -80px) rotate(15deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flower-bg .petal,
+  .flower-bg .petal.spin,
+  .flower-bg .petal.drift {
+    animation: none;
+  }
+}
