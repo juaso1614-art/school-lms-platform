@@ -12,14 +12,15 @@
       <label>Lesson title<input type="text" name="title" maxlength="200" required /></label>
       <label>Subject<input type="text" name="subject" maxlength="100" required /></label>
       <label>Date and start time<input type="datetime-local" name="start_at" required /></label>
-      <button type="submit" class="btn btn-primary">Create Google Meet lesson</button>
+      <label>Google Meet link (paste your own, or leave blank to auto-create){% if not google_meet_configured %} <span class="field-error">required — Google Meet API not configured</span>{% endif %}<input type="url" name="meeting_url" placeholder="https://meet.google.com/xxx-xxxx-xxx" {% if not google_meet_configured %}required{% endif %} /></label>
+      <button type="submit" class="btn btn-primary">Create lesson</button>
     </form>
   </section>
   {% endif %}
   <div class="feature-grid">{% for school_class in classes %}<article class="feature-card"><span class="tag {% if school_class.status == 'Live' %}success{% else %}warning{% endif %}">{{ school_class.status }}</span><h3>{{ school_class.title }}</h3><p>{{ school_class.subject }} / {{ school_class.teacher_name }}</p><p>{{ school_class.start_time }} - {{ school_class.end_time }} / {{ school_class.recurrence }}</p>
     {% if school_class.lesson_date %}<p>{{ school_class.lesson_date|date:"M j, Y" }}</p>{% endif %}
-    {% if school_class.status == 'Live' and school_class.google_meet_space_name %}<a href="{{ school_class.meeting_url }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Join live class</a>{% elif school_class.status == 'Live' %}<p>This legacy lesson has no Google Meet link. Schedule a new lesson to use Google Meet.</p>{% endif %}
-    {% if is_staff and school_class.status != 'Live' and school_class.google_meet_space_name %}<form method="post" action="{% url 'class_go_live' school_class.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary">Start Google Meet lesson</button></form>{% elif is_staff and school_class.status != 'Live' %}<p>Schedule a new Google Meet lesson to create its join link.</p>{% endif %}
+    {% if school_class.status == 'Live' and school_class.meeting_url %}<a href="{{ school_class.meeting_url }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Join live class</a>{% elif school_class.status == 'Live' %}<p>This lesson has no Google Meet link.</p>{% endif %}
+    {% if is_staff and school_class.status != 'Live' and school_class.meeting_url %}<form method="post" action="{% url 'class_go_live' school_class.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary">Start Google Meet lesson</button></form>{% elif is_staff and school_class.status != 'Live' %}<p>Schedule a new lesson and paste a Google Meet link.</p>{% endif %}
   </article>{% empty %}<p>No classes are scheduled yet.</p>{% endfor %}</div>
 </div></section>
 {% endblock %}

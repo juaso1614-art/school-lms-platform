@@ -447,11 +447,18 @@ def classes_page(request):
             return redirect("classes")
 
         end_time = scheduled_start + timezone.timedelta(hours=1)
-        try:
-            meeting = google_meet.create_meeting()
-        except google_meet.GoogleMeetError as error:
-            messages.error(request, str(error))
-            return redirect("classes")
+        pasted_url = request.POST.get("meeting_url", "").strip()
+        if pasted_url:
+            meeting_url = pasted_url
+            space_name = ""
+        else:
+            try:
+                meeting = google_meet.create_meeting()
+            except google_meet.GoogleMeetError as error:
+                messages.error(request, str(error))
+                return redirect("classes")
+            meeting_url = meeting["join_url"]
+            space_name = meeting["space_name"]
 
         SchoolClass.objects.create(
             title=title,
@@ -461,8 +468,8 @@ def classes_page(request):
             start_time=scheduled_start.strftime("%I:%M %p"),
             end_time=end_time.strftime("%I:%M %p"),
             room_name="google-meet",
-            meeting_url=meeting["join_url"],
-            google_meet_space_name=meeting["space_name"],
+            meeting_url=meeting_url,
+            google_meet_space_name=space_name,
             recurrence="One-off",
         )
         messages.success(request, "One-hour Google Meet lesson scheduled successfully.")
@@ -485,10 +492,7 @@ def class_go_live(request, class_id):
     if not user or user.role not in ("teacher", "admin"):
         return redirect("login")
     school_class = get_object_or_404(SchoolClass, pk=class_id)
-    if (
-        not school_class.google_meet_space_name
-        or not school_class.meeting_url.startswith("https://meet.google.com/")
-    ):
+    if not school_class.meeting_url.startswith("https://meet.google.com/"):
         messages.error(request, "This lesson has no Google Meet link. Schedule a new Google Meet lesson.")
         return redirect("classes")
     school_class.status = "Live"

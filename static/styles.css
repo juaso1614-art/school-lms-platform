@@ -28,7 +28,7 @@ html {
 body {
   margin: 0;
   color: var(--ink);
-  background: var(--paper);
+  background: transparent;
   font-family: Inter, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.6;
@@ -124,13 +124,15 @@ nav a:hover {
 }
 
 main {
+  position: relative;
+  z-index: 1;
   min-height: 65vh;
 }
 
 .hero {
   overflow: hidden;
   color: #ffffff;
-  background: linear-gradient(118deg, #102d43 0%, #164b6a 72%, #1763bd 130%);
+  background: linear-gradient(118deg, rgba(16, 45, 67, 0.82) 0%, rgba(22, 75, 106, 0.82) 72%, rgba(23, 99, 189, 0.82) 130%);
 }
 
 .hero-inner {
@@ -832,6 +834,8 @@ textarea:focus {
 }
 
 .site-footer {
+  position: relative;
+  z-index: 1;
   padding-block: 42px;
   color: #d6e4eb;
   background: #102d43;
