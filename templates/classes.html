@@ -12,7 +12,8 @@
       <label>Lesson title<input type="text" name="title" maxlength="200" required /></label>
       <label>Subject<input type="text" name="subject" maxlength="100" required /></label>
       <label>Date and start time<input type="datetime-local" name="start_at" required /></label>
-      <button type="submit" class="btn btn-primary">Create Google Meet lesson</button>
+      <label>Google Meet link (paste your own, or leave blank to auto-create){% if not google_meet_configured %} <span class="field-error">required — Google Meet API not configured</span>{% endif %}<input type="url" name="meeting_url" placeholder="https://meet.google.com/xxx-xxxx-xxx" {% if not google_meet_configured %}required{% endif %} /></label>
+      <button type="submit" class="btn btn-primary">Create lesson</button>
     </form>
   </section>
   {% endif %}
