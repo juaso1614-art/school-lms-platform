@@ -53,10 +53,15 @@ class CurriculumSeedTests(TestCase):
         call_command("seed_school_data")
         self.assertEqual(SubjectCatalog.objects.filter(is_active=True).count(), sum(expected_counts.values()))
         active_subjects = SubjectCatalog.objects.filter(is_active=True)
-        self.assertEqual(GameTopic.objects.filter(is_active=True).count(), active_subjects.count())
-        self.assertEqual(GameQuestion.objects.filter(is_active=True).count(), active_subjects.count() * 6)
+        active_topics = GameTopic.objects.filter(is_active=True, subject__is_active=True)
+        expected_topic_count = active_subjects.count() * 3 + 4
+        self.assertEqual(active_topics.count(), expected_topic_count)
         self.assertEqual(
-            GameTopic.objects.filter(is_active=True, subject__is_active=True)
+            GameQuestion.objects.filter(is_active=True, topic__in=active_topics).count(),
+            expected_topic_count * 6,
+        )
+        self.assertEqual(
+            active_topics
             .values("subject_id")
             .distinct()
             .count(),
@@ -77,7 +82,12 @@ class CurriculumSeedTests(TestCase):
         literature = active_subjects.get(name="Literature in English", grade_level="Grade 10")
         self.assertIn("crop production", guides.get(subject=agriculture).content_outline.lower())
         self.assertIn("poetry", guides.get(subject=literature).content_outline.lower())
-        for topic in GameTopic.objects.filter(is_active=True):
+        self.assertEqual(active_topics.filter(subject=agriculture).count(), 3)
+        self.assertTrue(active_topics.filter(subject=agriculture, title__icontains="Irrigation").exists())
+        grade_two_mathematics = active_subjects.get(name="Mathematics", grade_level="Grade 2")
+        self.assertEqual(active_topics.filter(subject=grade_two_mathematics).count(), 4)
+        self.assertTrue(guides.get(subject=agriculture).content_outline.count("Topic ") >= 3)
+        for topic in active_topics:
             with self.subTest(topic=topic.title):
                 self.assertEqual(topic.questions.filter(is_active=True, difficulty=1).count(), 2)
                 self.assertEqual(topic.questions.filter(is_active=True, difficulty=2).count(), 2)

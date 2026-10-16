@@ -152,10 +152,73 @@ SUBJECT_CURRICULUM_CONTENT = {
     "Woodwork": ("Timber, measurement, and safe construction", "wood grain, marking out, joints, finishing, and tool safety", "plan and measure a small supervised timber model"),
 }
 
+SUBJECT_TOPIC_EXTENSIONS = {
+    "Agriculture": (("Crop rotation and planting systems", "crop rotation, spacing, and seasonal planning", "plan a simple crop rotation using different crop groups"), ("Irrigation and crop protection", "irrigation scheduling, pest identification, and integrated controls", "compare irrigation choices and select a safe crop-protection response")),
+    "Arabic": (("Arabic vocabulary and pronouns", "nouns, pronouns, and vocabulary for people and places", "match words to their referents and build short sentences"), ("Arabic reading and dialogue", "short texts, question forms, and conversational responses", "read a short dialogue and answer with a complete sentence")),
+    "Aviation": (("Aircraft components and control surfaces", "ailerons, elevators, rudders, and their effects on movement", "match a control surface to the movement it helps produce"), ("Aviation weather and flight planning", "wind, visibility, weather reports, and safe planning", "interpret a simple weather observation before a model-flight plan")),
+    "Biology": (("Ecology and ecosystem relationships", "food chains, populations, habitats, and energy transfer", "trace how a change in one population can affect a food chain"), ("Human body systems and health", "organs, transport, nutrition, and system coordination", "connect a body system to its role in maintaining health")),
+    "Building Construction": (("Construction measurement and drawings", "dimensions, scale, symbols, and plan views", "read a scaled drawing and identify a required measurement"), ("Structures, materials, and site safety", "loads, material selection, hazards, and protective measures", "choose a suitable material and identify a safe work procedure")),
+    "Business Studies": (("Markets, customers, and enterprise", "customer needs, products, pricing, and ethical selling", "match a customer need to a product and a fair price"), ("Business costs and simple records", "start-up costs, sales, expenses, and basic cash records", "calculate a simple balance from recorded sales and expenses")),
+    "CRE": (("Biblical stories and interpretation", "characters, context, message, and textual evidence", "use a detail from a Bible story to explain its message"), ("Christian worship and community service", "worship, compassion, reconciliation, and service", "select a responsible community action linked to a Christian value")),
+    "Chemistry": (("Atomic structure and the periodic table", "elements, protons, electrons, groups, and periods", "use an element's position to identify a basic property"), ("Chemical reactions and acids", "reactants, products, indicators, and safe observations", "classify a simulated indicator result and represent a simple reaction")),
+    "Community Service Learning": (("Community needs assessment", "stakeholders, observation, respectful questions, and priorities", "sort observations to identify a clearly evidenced community need"), ("Service action and reflection", "action plans, roles, participation, and evaluation", "set a measurable goal and reflect on evidence after a service activity")),
+    "Computer Studies": (("Algorithms and programming logic", "sequence, selection, repetition, and debugging", "trace an algorithm and locate a step that causes an incorrect result"), ("Data representation and computer networks", "binary data, devices, connections, and responsible access", "identify how a device sends information across a simple network")),
+    "Core Mathematics": (("Functions and algebraic models", "variables, expressions, equations, and input-output relationships", "represent a changing quantity with a simple function"), ("Geometry, statistics, and probability", "shape properties, data summaries, and chance", "choose a suitable representation for a data set or geometric relationship")),
+    "Creative Activities": (("Colour, shape, and pattern", "primary colours, repeated shapes, contrast, and arrangement", "create and describe a repeating pattern with a clear rule"), ("Making, movement, and creative expression", "materials, rhythm, movement, and reflective choices", "plan a short creative sequence and explain one design choice")),
+    "Creative Arts": (("Visual elements and composition", "line, shape, colour, space, balance, and emphasis", "revise a composition to make its focal point clearer"), ("Art materials and creative interpretation", "media choice, technique, audience, and interpretation", "select a medium and justify how it supports an intended message")),
+    "Electricity": (("Circuit symbols and series circuits", "circuit paths, symbols, switches, and component connections", "trace a low-voltage series circuit from its diagram"), ("Electrical measurement and protection", "current, voltage, isolation, fuses, and safe procedures", "choose a safe meter connection for a supervised circuit check")),
+    "English": (("Grammar, sentence structure, and vocabulary", "parts of speech, clauses, punctuation, and meaning in context", "edit a paragraph for clear sentence structure and word choice"), ("Composition and oral communication", "purpose, audience, paragraphing, listening, and revision", "plan and revise a short message for a stated audience")),
+    "English Activities": (("Letter sounds and word building", "phonemes, letter patterns, syllables, and familiar words", "segment a familiar word and match its sounds to letters"), ("Listening, speaking, and early reading", "listening for details, sequencing, and oral sentences", "retell a short event in order using a complete sentence")),
+    "Environmental Activities": (("Water sources and conservation", "water uses, clean sources, safe storage, and conservation", "identify a way to reduce water waste at home or school"), ("Habitats, waste, and local action", "living things, habitats, sorting waste, and community care", "classify a local waste item and suggest an appropriate action")),
+    "Essential Mathematics": (("Measurement, money, and budgeting", "units, prices, totals, change, and simple budgets", "compare costs and prepare a balanced small budget"), ("Data, chance, and practical numeracy", "tables, graphs, frequency, and everyday chance", "read a data display and support a conclusion with values")),
+    "Fasihi ya Kiswahili": (("Ushairi na matumizi ya lugha", "mshororo, vina, tamathali za usemi, na ujumbe", "tumia mfano wa lugha kueleza ujumbe wa shairi"), ("Riwaya, tamthilia, na wahusika", "wahusika, mandhari, migogoro, na dhamira", "linganisha kitendo cha mhusika na dhamira ya kazi")),
+    "Fine Arts": (("Line, form, and perspective", "contour, proportion, viewpoint, and spatial depth", "use a viewpoint and proportions to plan a drawing"), ("Tone, colour, and art interpretation", "light source, value, colour relationships, and meaning", "explain how tone or colour changes the reading of an artwork")),
+    "French": (("French vocabulary and everyday situations", "common nouns, articles, greetings, and useful expressions", "choose an expression that fits a familiar situation"), ("French verbs and sentence construction", "subject pronouns, present-tense verbs, and word order", "build a short sentence with a suitable subject and verb")),
+    "General Science": (("Energy forms and transformations", "energy stores, transfer, conservation, and observable change", "trace an energy transfer in a familiar device"), ("Materials and fair investigations", "material properties, variables, measurements, and evidence", "plan a fair comparison of two materials and record observations")),
+    "Geography": (("Map scale, direction, and location", "grid references, compass direction, symbols, and scale", "use a map key and scale to describe a route"), ("Weather, climate, and landform processes", "weather elements, rainfall, relief, and surface processes", "interpret observations to explain a local weather or landform pattern")),
+    "German": (("German vocabulary and everyday situations", "common nouns, articles, greetings, and useful expressions", "choose a phrase that fits a familiar situation"), ("German verbs and sentence construction", "pronouns, present-tense verbs, and basic word order", "build a simple sentence with an appropriate verb form")),
+    "HRE": (("Hindu stories, teachings, and interpretation", "context, dharma, ahimsa, and lessons from Hindu traditions", "use a story or teaching to explain a respectful choice"), ("Hindu worship, festivals, and community", "worship practices, festivals, belonging, and responsibility", "connect a festival or practice to its community meaning")),
+    "History and Citizenship": (("Chronology and historical sources", "timelines, primary sources, perspective, and corroboration", "compare two accounts and identify a supported claim"), ("Rights, duties, and public participation", "rights, responsibilities, leadership, and civic processes", "choose a constructive way to address a community issue")),
+    "Home Science": (("Balanced nutrition and meal planning", "food groups, nutrients, portions, and dietary needs", "plan a balanced meal using locally available foods"), ("Food hygiene, textiles, and household resources", "clean handling, storage, fibres, care labels, and waste reduction", "choose a safe storage or care method for a household item")),
+    "ICT": (("Digital documents and information management", "files, folders, productivity tools, and accurate data handling", "organize a set of files and select a suitable digital tool"), ("Online safety, privacy, and communication", "personal data, secure access, respectful communication, and risks", "identify a risk in a digital scenario and choose a safer response")),
+    "IRE": (("Qur'anic guidance and Islamic teachings", "context, compassion, honesty, and interpretation of guidance", "connect a teaching to a fair everyday decision"), ("Worship, conduct, and community responsibility", "worship, respect, service, and care for others", "choose a responsible action for a community situation")),
+    "Indigenous Language": (("Oral expression and everyday vocabulary", "listening, pronunciation, vocabulary, and turn-taking", "use a familiar expression appropriately in a short dialogue"), ("Stories, sayings, and language context", "oral narrative, proverbs, meaning, and respectful context", "explain the meaning of a saying using an example")),
+    "Indigenous Languages": (("Oral literature and storytelling", "narrative sequence, performance, audience, and language heritage", "retell a story and identify how its sequence supports meaning"), ("Proverbs, vocabulary, and cultural context", "figurative meaning, local vocabulary, and context", "interpret a proverb and describe a context where it applies")),
+    "Integrated Science": (("Variables, measurement, and fair testing", "independent and dependent variables, controls, and repeat readings", "identify what to change and measure in a fair test"), ("Ecosystems, materials, and evidence", "organism relationships, material properties, and supported claims", "use observations to explain a change in a simple ecosystem")),
+    "Kiswahili": (("Sarufi na ujenzi wa sentensi", "aina za maneno, nyakati, upatanisho, na mpangilio wa sentensi", "rekebisha sentensi ili iwe na upatanisho sahihi"), ("Ufahamu, msamiati, na mawasiliano", "maana ya maneno, hoja kuu, kusikiliza, na majibu", "jibu swali la ufahamu kwa kutumia ushahidi wa kifungu")),
+    "Kiswahili Lugha": (("Ngeli na upatanisho wa kisarufi", "ngeli za nomino, vivumishi, vitenzi, na upatanisho", "chagua upatanisho unaolingana na nomino katika sentensi"), ("Uandishi na ufahamu wa Kiswahili", "muundo wa insha, msamiati, hoja, na ushahidi", "boresha aya kwa kutumia msamiati na mpangilio unaofaa")),
+    "Literature in English": (("Poetry, imagery, and voice", "speaker, imagery, sound, form, and interpretation", "support an interpretation of a poem with a quotation"), ("Prose, drama, and character", "character, setting, conflict, dialogue, and theme", "explain how a character's choice develops a theme")),
+    "Mandarin": (("Mandarin pronunciation and tones", "pinyin, tone contrasts, syllables, and listening", "distinguish tones in a familiar word pair"), ("Mandarin characters and sentence patterns", "basic characters, word order, question forms, and greetings", "build a short sentence using a familiar pattern")),
+    "Marine and Fisheries Technology": (("Aquatic habitats and water quality", "salinity, oxygen, habitats, and organism needs", "interpret a water-quality observation for an aquatic habitat"), ("Fish handling and sustainable fisheries", "hygiene, preservation, stock management, and conservation", "select a safe fish-handling or sustainable harvesting practice")),
+    "Mathematics": (("Fractions, multiplication, and measurement", "number facts, equal groups, fractions, and standard units", "solve a practical problem and show each calculation"), ("Geometry, patterns, and data", "shape properties, sequences, tables, and simple graphs", "identify a pattern rule or summarize data in a suitable display")),
+    "Media Technology": (("Audio, image, and video production", "framing, sound capture, editing sequence, and file formats", "plan a short media product using appropriate production steps"), ("Audience, sources, and media ethics", "audience, attribution, representation, and consent", "review a media message for sourcing and audience suitability")),
+    "Metalwork": (("Metal properties and marking out", "measurement, ferrous and non-ferrous metals, and layout", "select and mark a material for a supervised model"), ("Tools, joints, and workshop safety", "tool selection, joining methods, inspection, and protective practice", "identify an appropriate joint and its safety checks")),
+    "Music and Dance": (("Rhythm, notation, and ensemble", "pulse, note duration, dynamics, and coordinated performance", "perform a short rhythm while keeping a steady pulse"), ("Pitch, movement, and cultural context", "pitch patterns, movement, expression, and context", "compare two movement or musical patterns and describe their differences")),
+    "Physical Education": (("Fitness components and safe training", "endurance, strength, flexibility, warm-up, and recovery", "match an exercise to a fitness component and a safe warm-up"), ("Movement skills and healthy participation", "coordination, balance, teamwork, rules, and inclusion", "apply a movement skill while following rules and including others")),
+    "Physics": (("Motion, forces, and energy", "speed, force, work, energy transfer, and measurement", "interpret simple motion data and explain a force effect"), ("Current, potential difference, and resistance", "circuit symbols, meter connections, Ohm's law, and safety", "use readings from a supervised circuit to relate voltage and current")),
+    "Power Mechanics": (("Engines and energy transfer", "engine components, input energy, motion, and transmission", "trace the path of motion through a simple mechanical system"), ("Inspection, maintenance, and workshop safety", "routine checks, tools, hazards, and maintenance records", "select a safe inspection step for a stated mechanical symptom")),
+    "Pre-Technical Studies": (("Technical drawing and design briefs", "orthographic views, dimensions, constraints, and communication", "interpret a brief and draw a dimensioned solution"), ("Materials, prototypes, and evaluation", "properties, joining, testing, and iterative improvement", "test a prototype against a stated design requirement")),
+    "Science and Technology": (("Living things and material properties", "organism needs, material properties, observation, and comparison", "classify observations and select a material for a simple purpose"), ("Simple systems and design solutions", "inputs, processes, outputs, responsible design, and testing", "test a simple solution and improve it using recorded evidence")),
+    "Social Studies": (("Maps, location, and community resources", "map symbols, direction, local resources, and settlement", "use a map to locate a community resource and describe access"), ("Culture, citizenship, and shared responsibility", "community diversity, rights, duties, and cooperation", "propose a respectful response to a shared community concern")),
+    "Sports and Recreation": (("Game skills, rules, and tactics", "skill execution, rules, positioning, and fair play", "choose a tactic that follows the rules of a familiar game"), ("Fitness, recreation, and inclusion", "fitness, leisure, adaptation, teamwork, and safety", "adapt a recreational activity to support safe participation")),
+    "Theatre and Film": (("Script, character, and dramatic structure", "scene sequence, motivation, dialogue, and conflict", "revise a scene so a character's motivation is clear"), ("Storyboards, camera, and production roles", "shot sequence, framing, sound, roles, and production safety", "order storyboard frames to communicate a coherent short scene")),
+    "Woodwork": (("Timber properties and marking out", "grain, measurement, defects, layout, and material choice", "mark a measured piece while accounting for the grain"), ("Joints, finishing, and workshop safety", "joint purpose, surface preparation, finishing, and tool care", "choose a suitable joint and list its supervised safety checks")),
+}
+
+LEGACY_GAME_TOPIC_TITLES = (
+    "Number patterns and problem solving",
+    "Reading and communication skills",
+    "Investigation and scientific evidence",
+    "People, place, and evidence",
+    "Elements and creative practice",
+    "Tools, design, and safe practice",
+)
+
 
 def upsert_game_topic(subject, title, description, levels):
     topic, _ = GameTopic.objects.update_or_create(
         subject=subject,
+        title=title,
         defaults={"description": description, "is_active": True},
     )
     for difficulty, questions in enumerate(levels, start=1):
@@ -213,20 +276,17 @@ def generated_subject_levels(subject, curriculum, peers):
 
 
 def upsert_subject_guide(subject, curriculum, created_by):
-    focus, concept, practice = curriculum
+    curricula = (curriculum, *SUBJECT_TOPIC_EXTENSIONS[subject.name])
     title = f"{subject.grade_level} {subject.name} Topical Study Guide"
-    description = f"CBE study guide for {subject.grade_level} {subject.name}, focused on {focus}."
-    content_outline = (
-        f"Topic: {focus}\n"
-        f"Key concept: {concept.capitalize()}.\n"
-        f"Guided learning activity: Learners {practice}.\n"
-        "Review: explain the idea, practise the skill, and use evidence to check understanding."
+    focus_list = ", ".join(item[0] for item in curricula)
+    description = f"CBE study guide for {subject.grade_level} {subject.name}, covering {focus_list}."
+    content_outline = "\n".join(
+        f"Topic {index}: {focus}\nKey concept: {concept.capitalize()}.\nGuided activity: Learners {practice}."
+        for index, (focus, concept, practice) in enumerate(curricula, start=1)
     )
-    exercises = (
-        f"1. Explain {concept} in your own words.\n"
-        f"2. Complete this task: {practice}.\n"
-        f"3. Record one observation or example connected to {focus}.\n"
-        "4. Write a short conclusion using evidence from your work."
+    exercises = "\n".join(
+        f"Topic {index}: explain {concept}; {practice}; record evidence and write a supported conclusion."
+        for index, (_, concept, practice) in enumerate(curricula, start=1)
     )
     SubjectBook.objects.update_or_create(
         subject=subject,
@@ -373,7 +433,6 @@ class Command(BaseCommand):
                         },
                     )
 
-            authored_subjects = set()
             for subject_name, grade_level, title, description, levels in CBE_GAME_CONTENT:
                 subject = SubjectCatalog.objects.filter(
                     name=subject_name,
@@ -383,7 +442,6 @@ class Command(BaseCommand):
                 if not subject:
                     continue
                 upsert_game_topic(subject, title, description, levels)
-                authored_subjects.add(subject.pk)
 
             active_subjects = list(SubjectCatalog.objects.filter(is_active=True).select_related("docket"))
             subjects_by_category = {}
@@ -393,48 +451,37 @@ class Command(BaseCommand):
                 ]
 
             for subject in active_subjects:
-                if subject.pk in authored_subjects:
-                    continue
-                curriculum = SUBJECT_CURRICULUM_CONTENT[subject.name]
                 peers = [
                     peer_curriculum
                     for peer_name, peer_curriculum in subjects_by_category[subject.category].items()
                     if peer_name != subject.name
                 ]
-                title = f"{subject.name}: {curriculum[0]}"
-                description = f"{subject.grade_level} {subject.name}. Focus: {curriculum[0]}. Key idea: {curriculum[1]}."
-                topic = GameTopic.objects.filter(
-                    subject=subject,
-                    created_by__isnull=True,
-                ).order_by("id").first()
-                if topic:
-                    topic.title = title
-                    topic.description = description
-                    topic.is_active = True
-                    topic.save(update_fields=("title", "description", "is_active"))
-                else:
-                    topic = GameTopic.objects.create(
-                        subject=subject,
-                        title=title,
-                        description=description,
+                curricula = (SUBJECT_CURRICULUM_CONTENT[subject.name], *SUBJECT_TOPIC_EXTENSIONS[subject.name])
+                for curriculum in curricula:
+                    title = f"{subject.name}: {curriculum[0]}"
+                    description = (
+                        f"{subject.grade_level} {subject.name}. Focus: {curriculum[0]}. "
+                        f"Key idea: {curriculum[1]}."
                     )
-                for difficulty, questions in enumerate(
-                    generated_subject_levels(subject, curriculum, peers),
-                    start=1,
-                ):
-                    for order, (prompt, choices, correct_choice, explanation) in enumerate(questions):
-                        GameQuestion.objects.update_or_create(
-                            topic=topic,
-                            difficulty=difficulty,
-                            order=order,
-                            defaults={
-                                "prompt": prompt,
-                                "choices": choices,
-                                "correct_choice": correct_choice,
-                                "explanation": explanation,
-                                "is_active": True,
-                            },
-                        )
+                    upsert_game_topic(
+                        subject,
+                        title,
+                        description,
+                        generated_subject_levels(subject, curriculum, peers),
+                    )
+
+            for subject in active_subjects:
+                for legacy_title in LEGACY_GAME_TOPIC_TITLES:
+                    topic = GameTopic.objects.filter(
+                        subject=subject,
+                        title=f"{subject.name}: {legacy_title}",
+                        created_by__isnull=True,
+                        is_active=True,
+                    ).first()
+                    if topic:
+                        topic.is_active = False
+                        topic.save(update_fields=("is_active",))
+                        topic.questions.update(is_active=False)
 
         demo_users = [
             ("admin@school.com", "admin123", "Mary", "King", "admin", "0721000000"),
