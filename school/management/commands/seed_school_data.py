@@ -1,12 +1,104 @@
 from django.core.management.base import BaseCommand
 
-from school.models import Invoice, ResourceMaterial, SchoolClass, User
+from school.models import (
+    Invoice,
+    ResourceMaterial,
+    SchoolClass,
+    SubjectBook,
+    SubjectCatalog,
+    SubjectDocket,
+    User,
+)
 
 
 class Command(BaseCommand):
     help = "Create the Peak Group of Schools demo users and sample portal data."
 
     def handle(self, *args, **options):
+        dockets = [
+            ("Lower Primary", "lower_primary", "Foundational literacy, numeracy, and life skills for Grades 2-3.", 1),
+            ("Upper Primary", "upper_primary", "Core learning and subject mastery for Grades 4-6.", 2),
+            ("Junior Secondary", "junior_secondary", "Middle-school enrichment and curriculum transitions for Grades 7-9.", 3),
+            ("Senior Secondary", "senior_secondary", "Exam-focused academic pathways and rigorous subject specialization for Grades 10-12.", 4),
+        ]
+        docket_map = {}
+        for title, slug, description, order in dockets:
+            docket, _ = SubjectDocket.objects.get_or_create(
+                slug=slug,
+                defaults={"title": title, "description": description, "grade_band": slug, "display_order": order},
+            )
+            docket_map[title] = docket
+
+        subject_catalogue = [
+            ("Lower Primary", "Grade 2", "English Language", "language", "ENG-G2"),
+            ("Lower Primary", "Grade 2", "Kiswahili", "language", "KIS-G2"),
+            ("Lower Primary", "Grade 2", "Mathematics", "core", "MAT-G2"),
+            ("Lower Primary", "Grade 2", "Environmental Activities", "science", "ENV-G2"),
+            ("Lower Primary", "Grade 2", "Creative Arts", "creative", "ART-G2"),
+            ("Lower Primary", "Grade 3", "English Language", "language", "ENG-G3"),
+            ("Lower Primary", "Grade 3", "Kiswahili", "language", "KIS-G3"),
+            ("Lower Primary", "Grade 3", "Mathematics", "core", "MAT-G3"),
+            ("Lower Primary", "Grade 3", "Science and Technology", "science", "ST-G3"),
+            ("Lower Primary", "Grade 3", "Religious Education", "humanities", "RE-G3"),
+            ("Upper Primary", "Grade 4", "English Language", "language", "ENG-G4"),
+            ("Upper Primary", "Grade 4", "Kiswahili", "language", "KIS-G4"),
+            ("Upper Primary", "Grade 4", "Mathematics", "core", "MAT-G4"),
+            ("Upper Primary", "Grade 4", "Science", "science", "SCI-G4"),
+            ("Upper Primary", "Grade 4", "Social Studies", "humanities", "SS-G4"),
+            ("Upper Primary", "Grade 5", "English Language", "language", "ENG-G5"),
+            ("Upper Primary", "Grade 5", "Kiswahili", "language", "KIS-G5"),
+            ("Upper Primary", "Grade 5", "Mathematics", "core", "MAT-G5"),
+            ("Upper Primary", "Grade 5", "Science", "science", "SCI-G5"),
+            ("Upper Primary", "Grade 5", "Agriculture", "technical", "AGR-G5"),
+            ("Upper Primary", "Grade 6", "English Language", "language", "ENG-G6"),
+            ("Upper Primary", "Grade 6", "Kiswahili", "language", "KIS-G6"),
+            ("Upper Primary", "Grade 6", "Mathematics", "core", "MAT-G6"),
+            ("Upper Primary", "Grade 6", "Science", "science", "SCI-G6"),
+            ("Upper Primary", "Grade 6", "Geography", "humanities", "GEO-G6"),
+            ("Junior Secondary", "Grade 7", "English", "language", "ENG-G7"),
+            ("Junior Secondary", "Grade 7", "Kiswahili", "language", "KIS-G7"),
+            ("Junior Secondary", "Grade 7", "Mathematics", "core", "MAT-G7"),
+            ("Junior Secondary", "Grade 7", "Integrated Science", "science", "INT-SCI-G7"),
+            ("Junior Secondary", "Grade 7", "Pre-Technical Studies", "technical", "PTS-G7"),
+            ("Junior Secondary", "Grade 8", "English", "language", "ENG-G8"),
+            ("Junior Secondary", "Grade 8", "Kiswahili", "language", "KIS-G8"),
+            ("Junior Secondary", "Grade 8", "Mathematics", "core", "MAT-G8"),
+            ("Junior Secondary", "Grade 8", "Biology", "science", "BIO-G8"),
+            ("Junior Secondary", "Grade 8", "History and Government", "humanities", "HIST-G8"),
+            ("Junior Secondary", "Grade 9", "English", "language", "ENG-G9"),
+            ("Junior Secondary", "Grade 9", "Kiswahili", "language", "KIS-G9"),
+            ("Junior Secondary", "Grade 9", "Mathematics", "core", "MAT-G9"),
+            ("Junior Secondary", "Grade 9", "Chemistry", "science", "CHEM-G9"),
+            ("Junior Secondary", "Grade 9", "Business Studies", "technical", "BUS-G9"),
+            ("Senior Secondary", "Grade 10", "English", "language", "ENG-G10"),
+            ("Senior Secondary", "Grade 10", "Kiswahili", "language", "KIS-G10"),
+            ("Senior Secondary", "Grade 10", "Mathematics", "core", "MAT-G10"),
+            ("Senior Secondary", "Grade 10", "Biology", "science", "BIO-G10"),
+            ("Senior Secondary", "Grade 10", "Physics", "science", "PHY-G10"),
+            ("Senior Secondary", "Grade 10", "Geography", "humanities", "GEO-G10"),
+            ("Senior Secondary", "Grade 11", "English", "language", "ENG-G11"),
+            ("Senior Secondary", "Grade 11", "Kiswahili", "language", "KIS-G11"),
+            ("Senior Secondary", "Grade 11", "Mathematics", "core", "MAT-G11"),
+            ("Senior Secondary", "Grade 11", "Chemistry", "science", "CHEM-G11"),
+            ("Senior Secondary", "Grade 11", "Economics", "humanities", "ECO-G11"),
+            ("Senior Secondary", "Grade 12", "English", "language", "ENG-G12"),
+            ("Senior Secondary", "Grade 12", "Kiswahili", "language", "KIS-G12"),
+            ("Senior Secondary", "Grade 12", "Mathematics", "core", "MAT-G12"),
+            ("Senior Secondary", "Grade 12", "Physics", "science", "PHY-G12"),
+            ("Senior Secondary", "Grade 12", "Geography", "humanities", "GEO-G12"),
+        ]
+        for docket_title, grade_level, name, category, code in subject_catalogue:
+            SubjectCatalog.objects.get_or_create(
+                name=name,
+                grade_level=grade_level,
+                defaults={
+                    "docket": docket_map[docket_title],
+                    "category": category,
+                    "code": code,
+                    "description": f"{name} for {grade_level} within the {docket_title} docket.",
+                },
+            )
+
         demo_users = [
             ("admin@school.com", "admin123", "Mary", "King", "admin", "0721000000"),
             ("teacher@school.com", "teacher123", "John", "Mwangi", "teacher", "0711223344"),
@@ -81,5 +173,32 @@ class Command(BaseCommand):
                     "status": status,
                 },
             )
+
+        authored_books = [
+            ("Kiswahili Revision Companion", "Kiswahili", "Grade 7", "Peter Njuguna", "Lower Primary"),
+            ("Geography Essentials", "Geography", "Grade 10", "Peter Njuguna", "Senior Secondary"),
+            ("English Practice Book", "English", "Grade 8", "Jane Akinyi", "Junior Secondary"),
+            ("Mathematics Mastery Workbook", "Mathematics", "Grade 9", "Mary Wanjiku", "Junior Secondary"),
+            ("Physics Revision Guide", "Physics", "Grade 12", "Daniel Otieno", "Senior Secondary"),
+        ]
+        for title, subject_name, grade_level, author_name, docket_title in authored_books:
+            subject = SubjectCatalog.objects.filter(name__iexact=subject_name, grade_level=grade_level).first()
+            if subject:
+                SubjectBook.objects.get_or_create(
+                    title=title,
+                    defaults={
+                        "subject": subject,
+                        "grade_level": grade_level,
+                        "author_name": author_name,
+                        "docket": subject.docket,
+                        "description": f"Detailed topic notes, guided exercises, and diagrams for {subject_name} in {grade_level}.",
+                        "content_outline": "Lesson objectives\nWorked examples\nRevision prompts\nExam-style questions",
+                        "exercises": "Practice tasks, timed quizzes, and chapter recap questions.",
+                        "diagrams": "Annotated charts, labelled figures, process maps, and concept visuals.",
+                        "file_url": "/library",
+                        "is_teacher_uploaded": True,
+                        "created_by": User.objects.filter(role__in=["teacher", "admin"]).first(),
+                    },
+                )
 
         self.stdout.write(self.style.SUCCESS("Peak Group of Schools demo data is ready."))

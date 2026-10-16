@@ -24,6 +24,10 @@ from .models import (
     ResourceMaterial,
     SchoolClass,
     SchoolStaffProfile,
+    SubjectBook,
+    SubjectCatalog,
+    SubjectDocket,
+    TeacherSubjectAssignment,
     SupportTicket,
     User,
 )
@@ -154,6 +158,88 @@ def staff_room(request):
             messages.success(request, "School leadership profile saved successfully.")
             return redirect("staff_room")
 
+        revision_fields = {
+            "book_title",
+            "book_subject",
+            "book_grade",
+            "book_author",
+            "book_docket",
+            "book_summary",
+            "book_outline",
+            "book_exercises",
+            "book_diagrams",
+        }
+        if any(field in request.POST for field in revision_fields):
+            required_book_fields = {"book_title", "book_subject", "book_grade", "book_author"}
+            missing = [field for field in sorted(required_book_fields) if not request.POST.get(field, "").strip()]
+            if missing:
+                messages.error(request, "Complete the required revision book details before submitting.")
+                return redirect("staff_room")
+
+            docket_map = {
+                "Lower Primary": "lower_primary",
+                "Upper Primary": "upper_primary",
+                "Junior Secondary": "junior_secondary",
+                "Senior Secondary": "senior_secondary",
+            }
+            grade_level = request.POST["book_grade"].strip()
+            docket_slug = docket_map.get(request.POST["book_docket"].strip(), "lower_primary")
+            docket, _ = SubjectDocket.objects.get_or_create(
+                slug=docket_slug,
+                defaults={
+                    "title": request.POST["book_docket"].strip() or "Lower Primary",
+                    "description": "CBE academic docket",
+                    "grade_band": docket_slug,
+                    "display_order": {"lower_primary": 1, "upper_primary": 2, "junior_secondary": 3, "senior_secondary": 4}.get(docket_slug, 1),
+                },
+            )
+            subject, _ = SubjectCatalog.objects.get_or_create(
+                name=request.POST["book_subject"].strip(),
+                grade_level=grade_level,
+                defaults={
+                    "code": f"{request.POST['book_subject'].strip()[:3].upper()}-{grade_level.replace(' ', '')}",
+                    "docket": docket,
+                    "description": "Teacher curated subject plan",
+                },
+            )
+            if subject.docket_id != docket.id:
+                subject.docket = docket
+                subject.save(update_fields=["docket"])
+
+            book = SubjectBook.objects.create(
+                title=request.POST["book_title"].strip(),
+                subject=subject,
+                grade_level=grade_level,
+                author_name=request.POST["book_author"].strip(),
+                docket=docket,
+                description=request.POST.get("book_summary", "").strip(),
+                content_outline=request.POST.get("book_outline", "").strip(),
+                exercises=request.POST.get("book_exercises", "").strip(),
+                diagrams=request.POST.get("book_diagrams", "").strip(),
+                created_by=user,
+                is_teacher_uploaded=True,
+            )
+            TeacherSubjectAssignment.objects.get_or_create(
+                teacher=user,
+                subject=subject,
+                defaults={"role": "Subject Teacher"},
+            )
+            ResourceMaterial.objects.create(
+                title=book.title,
+                subject=book.subject.name,
+                grade_level=book.grade_level,
+                resource_type="Revision Book",
+                term="Term 1",
+                academic_year=str(datetime.now().year),
+                file_url=book.file_url or "/library",
+                uploaded_by=f"{user.first_name} {user.last_name}".strip() or user.email,
+                author_name=book.author_name,
+                content_summary=book.description,
+                is_revision_material=True,
+            )
+            messages.success(request, "Revision material and subject book saved successfully.")
+            return redirect("staff_room")
+
         upload = request.FILES.get("material_file")
         allowed_extensions = {
             ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx",
@@ -178,6 +264,7 @@ def staff_room(request):
             academic_year=request.POST["academic_year"].strip(),
             file_url=default_storage.url(stored_path),
             uploaded_by=f"{user.first_name} {user.last_name}".strip() or user.email,
+            is_revision_material=True,
         )
         messages.success(request, "Material uploaded to the digital library.")
         return redirect("staff_room")
@@ -189,8 +276,11 @@ def staff_room(request):
             "user": user,
             "resources": ResourceMaterial.objects.order_by("-id")[:8],
             "staff_profiles": SchoolStaffProfile.objects.order_by("-id")[:8],
+            "subject_books": SubjectBook.objects.order_by("-id")[:8],
+            "subject_dockets": SubjectDocket.objects.order_by("display_order").prefetch_related("subjects"),
             "total_resources": ResourceMaterial.objects.count(),
             "total_staff_profiles": SchoolStaffProfile.objects.count(),
+            "total_subject_books": SubjectBook.objects.count(),
         },
     )
 
@@ -202,6 +292,9 @@ def library(request):
         "library.html",
         {
             "resources": ResourceMaterial.objects.order_by("-id"),
+            "subject_dockets": SubjectDocket.objects.order_by("display_order").prefetch_related("subjects"),
+            "subject_books": SubjectBook.objects.order_by("-created_at"),
+            "teacher_assignments": TeacherSubjectAssignment.objects.select_related("teacher", "subject").order_by("subject__docket__display_order", "subject__grade_level", "subject__name"),
             "is_staff": bool(user and user.role in ("teacher", "admin")),
         },
     )

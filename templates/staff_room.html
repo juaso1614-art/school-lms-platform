@@ -42,6 +42,29 @@
       </form>
     </section>
 
+    <section class="panel staff-upload-panel" aria-labelledby="subject-book-heading">
+      <h3 id="subject-book-heading">Add teacher subject revision book</h3>
+      <form method="post" class="staff-upload-form">{% csrf_token %}
+        <label>Book title<input type="text" name="book_title" maxlength="200" required /></label>
+        <label>Subject<input type="text" name="book_subject" maxlength="120" required /></label>
+        <label>Grade level<input type="text" name="book_grade" maxlength="20" placeholder="Grade 2" required /></label>
+        <label>Docket
+          <select name="book_docket" required>
+            <option value="Lower Primary">Lower Primary</option>
+            <option value="Upper Primary">Upper Primary</option>
+            <option value="Junior Secondary">Junior Secondary</option>
+            <option value="Senior Secondary">Senior Secondary</option>
+          </select>
+        </label>
+        <label>Author name<input type="text" name="book_author" maxlength="150" required /></label>
+        <label>Subject summary<textarea name="book_summary" rows="3" placeholder="Overview of chapters and key learning outcomes"></textarea></label>
+        <label>Content outline<textarea name="book_outline" rows="3" placeholder="Unit 1: ..."></textarea></label>
+        <label>Exercises<textarea name="book_exercises" rows="3" placeholder="Practice tasks, quick quizzes, and revision questions"></textarea></label>
+        <label>Diagrams and illustrations<textarea name="book_diagrams" rows="3" placeholder="Labelled diagrams, concept maps, charts, and images"></textarea></label>
+        <button type="submit" class="btn btn-primary">Save revision book</button>
+      </form>
+    </section>
+
     <section class="staff-library-panel" aria-labelledby="recent-materials-heading">
       <div class="staff-list-heading"><div><span class="eyebrow">{{ total_resources }} total</span><h3 id="recent-materials-heading">Recent library materials</h3></div><a href="{% url 'library' %}">Open library</a></div>
       <ul class="list staff-resource-list">
@@ -58,6 +81,15 @@
           <li><strong>{{ staff.full_name }}</strong><span>{{ staff.get_role_display }} · {{ staff.department }}</span><span>{{ staff.campus }} · {{ staff.email }}</span></li>
         {% empty %}
           <li>No leadership profiles have been uploaded yet.</li>
+        {% endfor %}
+      </ul>
+
+      <div class="staff-list-heading" style="margin-top: 1.5rem;"><div><span class="eyebrow">{{ total_subject_books }} total</span><h3>Revision books</h3></div></div>
+      <ul class="list staff-resource-list">
+        {% for book in subject_books %}
+          <li><strong>{{ book.title }}</strong><span>{{ book.subject.name }} · {{ book.grade_level }}</span><span>By {{ book.author_name }}</span></li>
+        {% empty %}
+          <li>No revision books have been uploaded yet.</li>
         {% endfor %}
       </ul>
       <p class="staff-shortcuts"><a href="{% url 'exams' %}">Manage exam papers</a><a href="{% url 'classes' %}">View classes</a></p>

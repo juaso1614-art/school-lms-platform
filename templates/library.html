@@ -5,6 +5,45 @@
 <section class="page-section"><div class="container">
   <div class="section-heading left"><span class="eyebrow">Learning resources</span><h2>Digital library</h2></div>
   {% if is_staff %}<p class="library-upload-link"><a class="btn btn-primary" href="{% url 'staff_room' %}">Upload learning material</a></p>{% endif %}
+
+  <div class="library-layout">
+    <div class="library-section">
+      <h3>Academic dockets</h3>
+      {% for docket in subject_dockets %}
+        <div class="docket-card">
+          <h4>{{ docket.title }}</h4>
+          <ul>
+            {% for subject in docket.subjects.all %}
+              <li>{{ subject.grade_level }} · {{ subject.name }}</li>
+            {% empty %}
+              <li>No subjects added yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% empty %}
+        <p>No academic dockets have been created yet.</p>
+      {% endfor %}
+    </div>
+
+    <div class="library-section">
+      <h3>Teacher-authored revision books</h3>
+      <div class="feature-grid">
+        {% for book in subject_books %}
+          <article class="feature-card">
+            <span class="tag success">{{ book.subject.name }}</span>
+            <h3>{{ book.title }}</h3>
+            <p>{{ book.grade_level }} · {{ book.docket.title }}</p>
+            <p><strong>Author:</strong> {{ book.author_name }}</p>
+            <p>{{ book.description|default:"Detailed lesson content, exercises, and diagrams." }}</p>
+            {% if book.file_url %}<a href="{{ book.file_url }}">Open book</a>{% endif %}
+          </article>
+        {% empty %}
+          <p>No revision books are available yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
   <div class="feature-grid">{% for resource in resources %}<article class="feature-card"><span class="tag success">{{ resource.resource_type }}</span><h3>{{ resource.title }}</h3><p>{{ resource.subject }} / {{ resource.grade_level }}</p><p>{{ resource.term }} / {{ resource.academic_year }}</p>
     {% if resource.resource_type|lower == 'video' %}
       <div class="lesson-player" data-video-player>

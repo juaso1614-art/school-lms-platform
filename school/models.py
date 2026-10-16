@@ -42,10 +42,99 @@ class ResourceMaterial(models.Model):
     academic_year = models.CharField(max_length=10)
     file_url = models.CharField(max_length=500)
     uploaded_by = models.CharField(max_length=100)
+    author_name = models.CharField(max_length=150, blank=True)
+    content_summary = models.TextField(blank=True)
+    is_revision_material = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+
+class SubjectDocket(models.Model):
+    title = models.CharField(max_length=120)
+    slug = models.SlugField(max_length=120, unique=True)
+    description = models.TextField(blank=True)
+    grade_band = models.CharField(
+        max_length=40,
+        choices=[
+            ("lower_primary", "Lower Primary"),
+            ("upper_primary", "Upper Primary"),
+            ("junior_secondary", "Junior Secondary"),
+            ("senior_secondary", "Senior Secondary"),
+        ],
+        default="lower_primary",
+    )
+    display_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ("display_order", "title")
+
+    def __str__(self):
+        return self.title
+
+
+class SubjectCatalog(models.Model):
+    name = models.CharField(max_length=120)
+    code = models.CharField(max_length=40, unique=True)
+    grade_level = models.CharField(max_length=20)
+    docket = models.ForeignKey(SubjectDocket, on_delete=models.CASCADE, related_name="subjects")
+    category = models.CharField(
+        max_length=40,
+        choices=[
+            ("core", "Core"),
+            ("language", "Language"),
+            ("science", "Science"),
+            ("humanities", "Humanities"),
+            ("creative", "Creative Arts"),
+            ("technical", "Technical / Practical"),
+        ],
+        default="core",
+    )
+    description = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ("docket__display_order", "grade_level", "name")
+        unique_together = ("name", "grade_level")
+
+    def __str__(self):
+        return f"{self.name} ({self.grade_level})"
+
+
+class TeacherSubjectAssignment(models.Model):
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subject_assignments")
+    subject = models.ForeignKey(SubjectCatalog, on_delete=models.CASCADE, related_name="teacher_assignments")
+    role = models.CharField(max_length=80, default="Subject Teacher")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("teacher", "subject")
+        ordering = ("subject__docket__display_order", "subject__grade_level", "subject__name")
+
+    def __str__(self):
+        return f"{self.teacher.email} -> {self.subject}"
+
+
+class SubjectBook(models.Model):
+    title = models.CharField(max_length=200)
+    subject = models.ForeignKey(SubjectCatalog, on_delete=models.CASCADE, related_name="books")
+    grade_level = models.CharField(max_length=20)
+    author_name = models.CharField(max_length=150)
+    docket = models.ForeignKey(SubjectDocket, on_delete=models.CASCADE, related_name="books")
+    description = models.TextField(blank=True)
+    content_outline = models.TextField(blank=True)
+    exercises = models.TextField(blank=True)
+    diagrams = models.TextField(blank=True)
+    file_url = models.CharField(max_length=500, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="created_books")
+    is_teacher_uploaded = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.title} - {self.author_name}"
 
 
 class SchoolStaffProfile(models.Model):
