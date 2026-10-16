@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lab.name }} | Peak Group of Schools{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="/static/subject-labs.css" />{% endblock %}
+{% block content %}
+<section class="subject-lab-page page-section" data-lab="{{ lab.slug }}">
+  <div class="container">
+    <a class="lab-back-link" href="{% url 'practical_labs' %}">← All practical labs</a>
+    <header class="subject-lab-heading">
+      <div><span class="eyebrow">{{ lab.room }}</span><h1>{{ lab.icon }} {{ lab.name }}</h1><p>{{ lab.description }}</p></div>
+      <span class="lab-online"><i></i> Virtual studio ready</span>
+    </header>
+    <p class="lab-safety-note"><strong>Virtual learning activity:</strong> this interactive studio models equipment for learning. Follow your teacher's instructions and never use virtual procedures as directions for unsupervised real-world experiments.</p>
+
+    <section class="lab-studio" aria-labelledby="studio-title">
+      <header class="studio-toolbar">
+        <div><span class="eyebrow">Interactive 3D studio</span><h2 id="studio-title">{{ lab.activity|truncatewords:8 }}</h2></div>
+        <div class="studio-actions"><span class="studio-hint">Drag to orbit · Scroll to zoom</span><button class="btn btn-light" type="button" id="reset-studio">Reset view</button></div>
+      </header>
+      <div class="studio-canvas-wrap">
+        <canvas id="subject-scene" tabindex="0" role="img" aria-label="Interactive 3D {{ lab.name }}. Drag to rotate and scroll to zoom. Equipment is listed below.">
+          Interactive 3D {{ lab.name }}. {{ lab.equipment|join:", " }}.
+        </canvas>
+        <p class="studio-status" id="scene-status" role="status" aria-live="polite">Loading 3D studio…</p>
+        <div class="scene-caption" id="scene-caption" aria-live="polite">{{ lab.room }}</div>
+      </div>
+      <div class="equipment-strip" aria-label="Equipment in this virtual lab">
+        {% for item in lab.equipment %}<span><i></i>{{ item }}</span>{% endfor %}
+      </div>
+    </section>
+
+    <div class="lab-learning-grid">
+      <section class="lab-control-panel" aria-labelledby="activity-title">
+        <span class="eyebrow">Guided practical</span><h2 id="activity-title">Your activity</h2>
+        <p class="activity-instructions">{{ lab.activity }}</p>
+        {% if lab.slug == "geography" %}
+        <div class="lab-control"><label for="rainfall">Simulated rainfall <output id="rainfall-value">40 mm</output></label><input id="rainfall" type="range" min="0" max="100" value="40"><button class="lab-action" id="run-geography" type="button">Run terrain study</button></div>
+        {% elif lab.slug == "languages" %}
+        <div class="lab-control"><label for="phrase-choice">Practice phrase</label><select id="phrase-choice"><option value="Good morning. How are you today?">English · Good morning</option><option value="Habari za asubuhi? Hujambo leo?">Kiswahili · Habari za asubuhi</option><option value="Bonjour. Comment allez-vous aujourd'hui ?">French · Bonjour</option></select><label for="speech-rate">Speech pace <output id="speech-rate-value">1.0×</output></label><input id="speech-rate" type="range" min="0.6" max="1.4" step="0.1" value="1"><button class="lab-action" id="play-phrase" type="button">Listen to phrase</button></div>
+        {% elif lab.slug == "computer" %}
+        <div class="lab-control"><span class="lab-field-label">Binary input · 8-bit byte</span><div class="binary-switches" role="group" aria-label="Binary input switches">{% for bit in "76543210" %}<label><input type="checkbox" value="{{ bit }}"><span>{{ bit }}</span></label>{% endfor %}</div><output class="lab-result-display" id="binary-result">Binary 00000000 = Decimal 0</output><button class="lab-action" id="convert-binary" type="button">Read logic board</button></div>
+        {% elif lab.slug == "music" %}
+        <div class="lab-control"><span class="lab-field-label">Virtual piano · Select a key to hear its pitch</span><div class="piano-keys" role="group" aria-label="Virtual piano keyboard">{% for note in "CDEFGAB" %}<button type="button" data-note="{{ note }}" aria-label="Play note {{ note }}">{{ note }}</button>{% endfor %}</div><label for="tempo">Metronome tempo <output id="tempo-value">90 BPM</output></label><input id="tempo" type="range" min="40" max="180" value="90"><button class="lab-action" id="play-pulse" type="button">Play one beat</button></div>
+        {% elif lab.slug == "biology" %}
+        <div class="lab-control"><label for="specimen">Prepared specimen</label><select id="specimen"><option value="onion">Onion epidermis · plant cells</option><option value="cheek">Cheek smear · animal cells</option><option value="leaf">Leaf section · stomata</option></select><label for="magnification">Magnification <output id="magnification-value">100×</output></label><input id="magnification" type="range" min="40" max="400" step="20" value="100"><button class="lab-action" id="focus-specimen" type="button">Focus microscope</button></div>
+        {% elif lab.slug == "chemistry" %}
+        <div class="lab-control"><label for="solution">Simulated solution</label><select id="solution"><option value="lemon">Citrus solution</option><option value="vinegar">Vinegar solution</option><option value="water" selected>Distilled water</option><option value="bicarbonate">Bicarbonate solution</option><option value="soap">Soap solution</option></select><label for="indicator">Indicator</label><select id="indicator"><option value="universal">Universal indicator</option><option value="litmus">Litmus</option><option value="phenolphthalein">Phenolphthalein</option></select><button class="lab-action" id="test-solution" type="button">Add indicator</button></div>
+        {% endif %}
+        <p class="lab-feedback" id="lab-feedback" role="status" aria-live="polite">Start the activity to record an observation.</p>
+      </section>
+      <section class="lab-observations" aria-labelledby="observations-title">
+        <div class="observations-heading"><div><span class="eyebrow">Field notes</span><h2 id="observations-title">Observations</h2></div><button class="btn btn-light" type="button" id="clear-observations">Clear</button></div>
+        <p class="observation-empty" id="observation-empty">Your activity observations will appear here.</p>
+        <ol class="observation-list" id="observation-list" aria-live="polite"></ol>
+        <p class="observation-privacy">Notes are kept only in this page and are not sent to a server.</p>
+      </section>
+    </div>
+  </div>
+</section>
+{{ lab|json_script:"lab-data" }}
+<script src="/static/subject-labs.js" defer></script>
+{% endblock %}

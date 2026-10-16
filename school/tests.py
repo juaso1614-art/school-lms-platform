@@ -53,7 +53,7 @@ class PortalTests(TestCase):
         self.assertEqual(response["Content-Type"], "text/plain")
 
     def test_protected_pages_redirect_to_login(self):
-        for page in ("dashboard", "billing", "practical_exams", "practical_attendance"):
+        for page in ("dashboard", "billing", "practical_exams", "practical_attendance", "practical_labs"):
             with self.subTest(page=page):
                 response = self.client.get(reverse(page))
                 self.assertRedirects(response, reverse("login"))
@@ -72,6 +72,47 @@ class PortalTests(TestCase):
         self.assertContains(response, "Digital voltmeter")
         self.assertContains(response, "Record six pairs of readings")
         self.assertContains(response, "Direct WhatsApp group messaging is not configured.")
+
+    def test_student_can_open_practical_labs_directory(self):
+        session = self.client.session
+        session["user_id"] = self.user.pk
+        session.save()
+
+        response = self.client.get(reverse("practical_labs"))
+
+        self.assertEqual(response.status_code, 200)
+        for subject in ("Geography", "Language", "Computer Science", "Music", "Biology", "Chemistry"):
+            with self.subTest(subject=subject):
+                self.assertContains(response, subject)
+        self.assertContains(response, reverse("practical_exams"))
+        self.assertContains(response, reverse("electrical_lab"))
+
+    def test_student_can_open_every_requested_subject_lab(self):
+        session = self.client.session
+        session["user_id"] = self.user.pk
+        session.save()
+
+        for slug, expected in (
+            ("geography", 'id="run-geography"'),
+            ("languages", 'id="play-phrase"'),
+            ("computer", 'id="convert-binary"'),
+            ("music", 'data-note="C"'),
+            ("biology", 'id="focus-specimen"'),
+            ("chemistry", 'id="test-solution"'),
+        ):
+            with self.subTest(subject=slug):
+                response = self.client.get(reverse("subject_lab", args=[slug]))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'id="subject-scene"')
+                self.assertContains(response, expected)
+                self.assertContains(response, "Interactive 3D studio")
+
+    def test_unknown_subject_lab_returns_not_found(self):
+        session = self.client.session
+        session["user_id"] = self.user.pk
+        session.save()
+
+        self.assertEqual(self.client.get(reverse("subject_lab", args=["astronomy"])).status_code, 404)
 
     def create_game_topic(self):
         docket = SubjectDocket.objects.create(

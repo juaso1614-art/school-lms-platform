@@ -9,6 +9,7 @@ A Django-powered school portal demo for school administrators, teachers, student
 - Scheduled live lessons with meeting spaces created directly through the Google Meet REST API.
 - A school library for learning materials and an exams area for PDF uploads.
 - An interactive KCSE-style Physics practical lab for investigating a resistor's current-voltage relationship. It is a revision simulation, not an official KNEC examination paper.
+- A practical-lab directory with interactive 3D Geography, Languages, Computer Science, Music, Biology, and Chemistry studios, alongside the Physics and Electrical labs. Subject activities include terrain and rainfall modeling, browser-based listening practice, binary conversion, synthesized musical notes, microscopy, and simulated indicator tests.
 - A date-based practical attendance register where teachers and admins record and review which students were present or absent.
 - Student invoices and payment records, with optional M-Pesa STK Push, PayPal Checkout, and Stripe Checkout integrations.
 - Support tickets and contact forms.
@@ -89,6 +90,7 @@ To create the first administrator on a deployed instance, run `python manage.py 
 
 - `config/` – Django settings, URL configuration, and WSGI application.
 - `school/` – models, views, Google Meet and payment integrations, tests, and management commands.
+- `/labs` – the practical-lab directory; `/labs/geography`, `/labs/languages`, `/labs/computer`, `/labs/music`, `/labs/biology`, and `/labs/chemistry` open guided subject studios. Interactions and observations stay in the browser; all activities are educational simulations and do not replace supervised practical work.
 - `templates/` – Django templates for portal pages.
 - `static/` – CSS and browser-side JavaScript collected and served by WhiteNoise.
 - `library/` – bundled library resources.

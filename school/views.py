@@ -918,6 +918,86 @@ def practical_lab(request):
     )
 
 
+PRACTICAL_LABS = (
+    {
+        "slug": "geography",
+        "name": "Geography Field Lab",
+        "icon": "🌍",
+        "room": "Earth & environment studio",
+        "description": "Explore landforms, contour lines, weather patterns, and field observations with an interactive terrain table.",
+        "activity": "Investigate how rainfall and elevation shape a landscape. Adjust the rainfall and rotate the terrain to compare runoff and contour patterns.",
+        "equipment": ("3D terrain model", "Contour map table", "Weather station", "Field compass", "Rain gauge"),
+        "scene": "terrain",
+    },
+    {
+        "slug": "languages",
+        "name": "Language & Communication Studio",
+        "icon": "💬",
+        "room": "Multilingual listening studio",
+        "description": "Practice listening, pronunciation, vocabulary, and sentence-building at an interactive language-learning station.",
+        "activity": "Choose a practice phrase and use the studio controls to explore speech pace and clear pronunciation. The app does not capture or upload microphone recordings.",
+        "equipment": ("Studio microphone", "Listening headphones", "Audio recorder", "Phrase cards", "Waveform display"),
+        "scene": "language",
+    },
+    {
+        "slug": "computer",
+        "name": "Computer Science Lab",
+        "icon": "🖥️",
+        "room": "Digital systems workshop",
+        "description": "Explore computer hardware, binary numbers, and digital logic at a fully equipped virtual workstation.",
+        "activity": "Set the eight binary switches, convert the resulting byte to decimal, and inspect the workstation components.",
+        "equipment": ("3D workstation", "Monitor & keyboard", "Binary logic board", "Network switch", "Digital multimeter"),
+        "scene": "computer",
+    },
+    {
+        "slug": "music",
+        "name": "Music & Sound Lab",
+        "icon": "🎼",
+        "room": "Acoustics & performance studio",
+        "description": "Discover pitch, rhythm, and timbre with virtual instruments, a mixing desk, and acoustic visualizations.",
+        "activity": "Play notes on the virtual keyboard and compare their pitch. Use the tempo control to hear how pulse changes rhythm.",
+        "equipment": ("Digital piano", "Drum pads", "Studio headphones", "Mixing console", "Metronome"),
+        "scene": "music",
+    },
+    {
+        "slug": "biology",
+        "name": "Biology & Life Sciences Lab",
+        "icon": "🧬",
+        "room": "Microscopy & life sciences suite",
+        "description": "Investigate cell structures and magnification on a modern virtual microscope with prepared specimen slides.",
+        "activity": "Select a specimen, change magnification, and identify visible structures. The virtual microscope is for learning, not diagnosis.",
+        "equipment": ("Compound microscope", "Prepared specimen slides", "Cell models", "Digital imaging screen", "Slide cabinet"),
+        "scene": "biology",
+    },
+    {
+        "slug": "chemistry",
+        "name": "Chemistry & Materials Lab",
+        "icon": "⚗️",
+        "room": "Virtual wet chemistry suite",
+        "description": "Explore indicators and the pH scale using interactive glassware and simulated, classroom-safe solutions.",
+        "activity": "Select a solution and add indicator to observe its approximate pH and colour change. All experiments are virtual.",
+        "equipment": ("Volumetric glassware", "Burette & retort stand", "Indicator bottles", "Digital pH meter", "Fume hood"),
+        "scene": "chemistry",
+    },
+)
+
+
+def practical_labs(request, slug=None):
+    user = _current_user(request)
+    if not user:
+        return redirect("login")
+    if user.role not in ("student", "teacher", "admin"):
+        return redirect("dashboard")
+
+    if slug is None:
+        return render(request, "practical_labs.html", {"user": user, "labs": PRACTICAL_LABS})
+
+    lab = next((item for item in PRACTICAL_LABS if item["slug"] == slug), None)
+    if lab is None:
+        raise Http404
+    return render(request, "subject_lab.html", {"user": user, "lab": lab})
+
+
 @require_http_methods(["GET", "POST"])
 def practical_attendance(request):
     user = _current_user(request)

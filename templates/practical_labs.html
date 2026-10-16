@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Practical Labs | Peak Group of Schools{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="/static/subject-labs.css" />{% endblock %}
+{% block content %}
+<section class="subject-labs-page page-section">
+  <div class="container">
+    <header class="labs-intro">
+      <span class="eyebrow">Peak virtual learning · Practical spaces</span>
+      <h1>Explore the labs</h1>
+      <p>Step into interactive subject studios. Examine modern 3D equipment, run guided activities, and build practical understanding from any device.</p>
+    </header>
+    <div class="labs-grid">
+      <a class="subject-lab-card legacy-lab-card" href="{% url 'practical_exams' %}">
+        <span class="lab-card-icon">⚡</span><span class="lab-card-room">Physics · Mechanics & electricity</span>
+        <h2>Physics Practical Lab</h2><p>Investigate current, voltage, and resistance with a virtual circuit and measuring instruments.</p>
+        <span class="lab-card-link">Enter physics lab <span aria-hidden="true">→</span></span>
+      </a>
+      {% for lab in labs %}
+      <a class="subject-lab-card" href="{% url 'subject_lab' lab.slug %}">
+        <span class="lab-card-icon">{{ lab.icon }}</span><span class="lab-card-room">{{ lab.room }}</span>
+        <h2>{{ lab.name }}</h2><p>{{ lab.description }}</p>
+        <span class="lab-card-link">Enter lab <span aria-hidden="true">→</span></span>
+      </a>
+      {% endfor %}
+      <a class="subject-lab-card legacy-lab-card" href="{% url 'electrical_lab' %}">
+        <span class="lab-card-icon">🔌</span><span class="lab-card-room">Technical · Electrical installation</span>
+        <h2>Electrical Training Lab</h2><p>Build and test a virtual one-way lighting circuit using switches, lamps, and protective equipment.</p>
+        <span class="lab-card-link">Enter electrical lab <span aria-hidden="true">→</span></span>
+      </a>
+    </div>
+    <p class="lab-safety-note"><strong>Learning simulations:</strong> virtual equipment is for education, not a substitute for supervised fieldwork or real laboratory safety procedures.</p>
+  </div>
+</section>
+{% endblock %}
