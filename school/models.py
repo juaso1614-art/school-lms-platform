@@ -75,10 +75,19 @@ class SubjectDocket(models.Model):
 
 
 class SubjectCatalog(models.Model):
+    PATHWAY_CHOICES = [
+        ("stem", "STEM"),
+        ("social_sciences", "Social Sciences"),
+        ("arts_sports_science", "Arts and Sports Science"),
+    ]
+
     name = models.CharField(max_length=120)
     code = models.CharField(max_length=40, unique=True)
     grade_level = models.CharField(max_length=20)
     docket = models.ForeignKey(SubjectDocket, on_delete=models.CASCADE, related_name="subjects")
+    pathways = models.JSONField(default=list, blank=True)
+    is_core = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True, db_index=True)
     category = models.CharField(
         max_length=40,
         choices=[
