@@ -1,1 +1,1 @@
-"""Wazito Schools portal application."""
+"""Peak Group of Schools portal application."""

@@ -4,7 +4,7 @@ from school.models import Invoice, ResourceMaterial, SchoolClass, User
 
 
 class Command(BaseCommand):
-    help = "Create the Wazito Schools demo users and sample portal data."
+    help = "Create the Peak Group of Schools demo users and sample portal data."
 
     def handle(self, *args, **options):
         demo_users = [
@@ -82,4 +82,4 @@ class Command(BaseCommand):
                 },
             )
 
-        self.stdout.write(self.style.SUCCESS("Wazito Schools demo data is ready."))
+        self.stdout.write(self.style.SUCCESS("Peak Group of Schools demo data is ready."))

@@ -1,4 +1,4 @@
-# Wazito Schools
+# Peak Group of Schools
 
 A Django-powered school portal demo for school administrators, teachers, students, and parents. Django handles application logic and templates; WhiteNoise serves static files, and Gunicorn runs the Django WSGI application in production.
 

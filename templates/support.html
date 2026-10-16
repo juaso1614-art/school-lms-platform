@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if contact_only %}Contact{% else %}Support{% endif %} | Wazito Schools{% endblock %}
+{% block title %}{% if contact_only %}Contact{% else %}Support{% endif %} | Peak Group of Schools{% endblock %}
 {% block content %}
 <section class="page-section"><div class="container support-grid">
-  <div class="support-info"><span class="eyebrow">Contact and support</span><h2>Get help from the Wazito Schools admin desk.</h2><div class="contact-box"><h3>School Support</h3><p><strong>Phone / WhatsApp:</strong> {{ support_phone }}</p><p><strong>Email:</strong> support@wazitoschools.ac.ke</p><p><strong>Office Hours:</strong> Mon - Fri, 8:00 AM - 5:00 PM</p></div></div>
+  <div class="support-info"><span class="eyebrow">Contact and support</span><h2>Get help from the Peak Group of Schools admin desk.</h2><div class="contact-box"><h3>School Support</h3><p><strong>Phone / WhatsApp:</strong> {{ support_phone }}</p><p><strong>Email:</strong> support@peakgroupschools.ac.ke</p><p><strong>Office Hours:</strong> Mon - Fri, 8:00 AM - 5:00 PM</p></div></div>
   <div class="auth-card support-form">{% if request.GET.success %}<div class="success-note">Your support ticket has been submitted successfully.</div>{% endif %}<h3>Submit a query</h3>
     <form method="post" action="/support">{% csrf_token %}<label>Full name<input type="text" name="user_name" required /></label><label>Email<input type="email" name="user_email" required /></label><label>Subject<input type="text" name="subject" required /></label><label>Message<textarea name="message" rows="5" required></textarea></label><button type="submit" class="btn btn-primary full">Send Ticket</button></form>
   </div>

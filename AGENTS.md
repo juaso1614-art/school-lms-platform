@@ -1,4 +1,4 @@
-# Wazito Schools — Base44 Dev Environment
+# Peak Group of Schools — Base44 Dev Environment
 
 ## Stack
 - Django 6.x, Python 3.12, SQLite (default), WhiteNoise, Gunicorn (production only).
