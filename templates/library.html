@@ -26,7 +26,7 @@
     </div>
 
     <div class="library-section">
-      <h3>Teacher-authored revision books</h3>
+      <h3>Subject study guides and revision books</h3>
       <div class="feature-grid">
         {% for book in subject_books %}
           <article class="feature-card">
@@ -35,6 +35,13 @@
             <p>{{ book.grade_level }} · {{ book.docket.title }}</p>
             <p><strong>Author:</strong> {{ book.author_name }}</p>
             <p>{{ book.description|default:"Detailed lesson content, exercises, and diagrams." }}</p>
+            {% if book.content_outline or book.exercises %}
+              <details class="library-study-guide">
+                <summary>Open study guide</summary>
+                {% if book.content_outline %}<p><strong>Content outline</strong><br>{{ book.content_outline|linebreaksbr }}</p>{% endif %}
+                {% if book.exercises %}<p><strong>Practice</strong><br>{{ book.exercises|linebreaksbr }}</p>{% endif %}
+              </details>
+            {% endif %}
             {% if book.file_url %}<a href="{{ book.file_url }}">Open book</a>{% endif %}
           </article>
         {% empty %}

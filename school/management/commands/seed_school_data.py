@@ -99,122 +99,63 @@ CBE_GAME_CONTENT = (
 )
 
 
-CBE_CATEGORY_GAME_CONTENT = {
-    "core": (
-        "Number patterns and problem solving",
-        "Practise number sense, calculation, and reasoning with everyday problems.",
-        (
-            (
-                ("In 572, what is the value of the digit 7?", ("7", "70", "700", "572"), 1, "The 7 is in the tens place, so its value is 70."),
-                ("What is 36 + 28?", ("54", "64", "74", "68"), 1, "36 + 28 = 64."),
-            ),
-            (
-                ("What is 3/4 of 20?", ("5", "10", "15", "18"), 2, "20 divided into 4 equal parts gives 5; 3 parts give 15."),
-                ("Four notebooks cost 35 shillings each. What is the total cost?", ("105", "120", "140", "160"), 2, "4 × 35 = 140 shillings."),
-            ),
-            (
-                ("A learner reads 18 pages each day for 5 days. How many pages are read?", ("23", "72", "90", "95"), 2, "18 × 5 = 90 pages."),
-                ("A 150 litre tank is 3/5 full. How much water is in it?", ("50 L", "60 L", "90 L", "120 L"), 2, "150 × 3/5 = 90 litres."),
-            ),
-        ),
-    ),
-    "language": (
-        "Reading and communication skills",
-        "Build vocabulary, sentence awareness, and meaning from context.",
-        (
-            (
-                ("Which punctuation mark normally ends a direct question?", ("Full stop", "Comma", "Question mark", "Apostrophe"), 2, "A direct question normally ends with a question mark."),
-                ("Which word is the action word in 'The farmer waters seedlings'?", ("farmer", "waters", "seedlings", "the"), 1, "'Waters' tells what the farmer does; it is the verb."),
-            ),
-            (
-                ("In 'The path was narrow, so we walked in single file', what does 'narrow' mean?", ("Not wide", "Very long", "Slippery", "Crowded"), 0, "The clue 'single file' shows that the path was not wide."),
-                ("Which sentence uses a joining word to show contrast?", ("We planted beans and maize.", "We planted beans, but the soil was dry.", "We planted beans yesterday.", "We planted beans near the fence."), 1, "'But' joins ideas that contrast."),
-            ),
-            (
-                ("A passage says, 'Although the sky was cloudy, the match continued.' What does 'although' signal?", ("A contrast", "A list", "A cause only", "A question"), 0, "'Although' introduces an idea that contrasts with the main clause."),
-                ("Which is the clearest summary of a paragraph about saving water at school?", ("It mentions a tap.", "Learners can reduce waste by closing taps and reporting leaks.", "Water is wet.", "The paragraph has four sentences."), 1, "A good summary captures the main idea and key actions without minor details."),
-            ),
-        ),
-    ),
-    "science": (
-        "Investigation and scientific evidence",
-        "Practise careful observation, fair testing, and interpreting evidence.",
-        (
-            (
-                ("Which action is a safe way to identify an unknown classroom material?", ("Taste it", "Smell it closely", "Observe it without touching or tasting", "Mix it with another material"), 2, "Use safe observation and follow the teacher's instructions; never taste unknown materials."),
-                ("What should you use to measure the temperature of water?", ("Thermometer", "Ruler", "Balance", "Stopwatch"), 0, "A thermometer measures temperature."),
-            ),
-            (
-                ("A learner tests how light affects seedling growth. Which factor should be kept the same for a fair comparison?", ("Amount of water", "Light exposure", "Measured growth", "Final conclusion"), 0, "Keep other conditions, such as water, the same while changing light exposure."),
-                ("Why should measurements include units?", ("To show what quantity and scale were measured", "To make results longer", "To replace observations", "To guarantee a result"), 0, "Units make measurements interpretable and comparable."),
-            ),
-            (
-                ("A learner repeats a measurement and gets similar results. What does this most strongly support?", ("Greater reliability", "A guaranteed hypothesis", "A larger sample", "A different variable"), 0, "Consistent repeated measurements make results more reliable."),
-                ("A result differs greatly from the other trials. What is the best next step?", ("Hide it", "Check the method and repeat the trial", "Change every variable", "Choose the expected result"), 1, "Check for a measurement or procedure issue and repeat carefully; do not discard data without reason."),
-            ),
-        ),
-    ),
-    "humanities": (
-        "People, place, and evidence",
-        "Use maps, sources, and reasoned evidence to understand people and places.",
-        (
-            (
-                ("What does a map key help a reader understand?", ("The meaning of map symbols", "The age of the map", "The weather tomorrow", "The distance to every place"), 0, "A key or legend explains the symbols used on a map."),
-                ("On a standard map, which direction is usually at the top?", ("South", "East", "North", "West"), 2, "Most maps are oriented with north at the top unless a compass rose says otherwise."),
-            ),
-            (
-                ("Which source is usually a primary source for studying a past event?", ("A diary written by a person who witnessed it", "A recent textbook summary", "An unsigned online summary", "A fictional story set later"), 0, "A contemporary diary is a first-hand record from the period."),
-                ("Why compare two accounts of the same event?", ("To consider perspective and corroborate evidence", "To make both accounts identical", "To avoid checking dates", "To select the longer account"), 0, "Comparing accounts can reveal perspective and help check claims against evidence."),
-            ),
-            (
-                ("A claim says a market grew because a new road opened. Which evidence would best help test the claim?", ("Records of market activity before and after the road opened", "The colour of the road signs", "A person's unrelated opinion", "A map with no dates"), 0, "Comparable records before and after the change provide relevant evidence."),
-                ("A source was created long after the event it describes. What should a researcher do?", ("Check its author, evidence, and other sources", "Assume every detail is exact", "Ignore all earlier records", "Treat opinion as measurement"), 0, "Evaluate authorship and corroborate later accounts with other available evidence."),
-            ),
-        ),
-    ),
-    "creative": (
-        "Elements and creative practice",
-        "Explore pattern, rhythm, planning, and reflection in creative work.",
-        (
-            (
-                ("Which pair of colours makes orange when mixed as paint?", ("Red and yellow", "Blue and green", "Black and white", "Blue and yellow"), 0, "Red and yellow combine to make orange in basic pigment mixing."),
-                ("In music, what is a steady repeated pulse called?", ("Beat", "Shade", "Texture", "Frame"), 0, "A beat is the regular pulse that supports rhythm."),
-            ),
-            (
-                ("Why might an artist repeat a shape or colour in a composition?", ("To create pattern and visual unity", "To remove all contrast", "To hide the subject", "To make every part identical"), 0, "Repetition can create pattern and help connect parts of a composition."),
-                ("What is a useful first step before rehearsing a short performance?", ("Agree on roles and a simple plan", "Skip the script", "Perform without listening", "Change every movement at once"), 0, "A shared plan helps performers coordinate roles and practice purposefully."),
-            ),
-            (
-                ("After reviewing a draft performance, one section is unclear. What is the best response?", ("Revise that section and rehearse it again", "Ignore all feedback", "Remove the whole performance", "Stop checking the work"), 0, "Focused revision and another rehearsal help test whether the change improves clarity."),
-                ("How can a learner judge whether a design communicates its intended idea?", ("Compare it with the goal and seek audience feedback", "Count only the materials", "Avoid showing anyone", "Change it without a reason"), 0, "Evaluate creative work against its purpose and use feedback to guide improvements."),
-            ),
-        ),
-    ),
-    "technical": (
-        "Tools, design, and safe practice",
-        "Practise safe tool choices, measurement, and step-by-step problem solving.",
-        (
-            (
-                ("What should you do before using an unfamiliar tool?", ("Check instructions and safety guidance", "Use it as quickly as possible", "Remove its guard", "Ask a friend to guess"), 0, "Understand the instructions and safety guidance before use, with supervision where required."),
-                ("Which tool is best for measuring the length of a short board?", ("Ruler or tape measure", "Thermometer", "Compass", "Measuring jug"), 0, "A ruler or tape measure is designed to measure length."),
-            ),
-            (
-                ("A design does not fit its intended space. What should be checked first?", ("The recorded dimensions", "The paint colour", "The project title", "The storage label"), 0, "Check the dimensions against the available space before changing the design."),
-                ("Why is personal protective equipment used for a practical task?", ("To reduce exposure to identified hazards", "To replace safe procedures", "To make every tool harmless", "To avoid reading instructions"), 0, "Appropriate protective equipment helps reduce specific risks but does not replace safe practice."),
-            ),
-            (
-                ("A prototype fails during a supervised test. What is the best next step?", ("Record what happened, identify a cause, and revise one feature", "Hide the result", "Change every part without recording it", "Repeat the same test without inspection"), 0, "Recorded evidence helps identify a cause and evaluate a focused design change."),
-                ("How can a learner compare two material samples fairly?", ("Test them under the same conditions and record observations", "Use a different test for each", "Choose the preferred result first", "Skip measurements"), 0, "Consistent conditions make comparisons more meaningful."),
-            ),
-        ),
-    ),
+SUBJECT_CURRICULUM_CONTENT = {
+    "Agriculture": ("Soil health and crop production", "soil texture, organic matter, and nutrient cycling", "compare soil samples and plan a crop-bed improvement"),
+    "Arabic": ("Everyday greetings and sentence building", "Arabic greetings, common vocabulary, and sentence order", "read a short greeting and build a simple dialogue"),
+    "Aviation": ("Principles of flight and aviation safety", "lift, drag, thrust, and safe pre-flight checks", "identify how control surfaces affect a supervised model flight"),
+    "Biology": ("Cells and life processes", "cell structures, photosynthesis, and organism systems", "connect an observed structure to its function"),
+    "Building Construction": ("Building materials and structural drawings", "material properties, scale drawings, and site safety", "interpret a simple plan and select a suitable building material"),
+    "Business Studies": ("Enterprise and basic business records", "customer needs, costs, revenue, and simple records", "prepare a small enterprise budget and record a transaction"),
+    "CRE": ("Christian values and responsible stewardship", "Christian teachings, service, and care for creation", "interpret a parable and relate its message to a community choice"),
+    "Chemistry": ("Matter, mixtures, and separation", "particle properties, solubility, and separation methods", "select a safe method for separating a stated mixture"),
+    "Community Service Learning": ("Community needs and service planning", "listening, needs assessment, shared responsibility, and reflection", "plan a small service action with a clear goal and review"),
+    "Computer Studies": ("Algorithms and computer systems", "input, processing, output, storage, and stepwise algorithms", "write and test an algorithm for a familiar task"),
+    "Core Mathematics": ("Algebraic reasoning and functions", "variables, equivalent expressions, and relationships", "represent a real situation with an equation and check its solution"),
+    "Creative Activities": ("Pattern, colour, and creative expression", "shape, colour, rhythm, and purposeful arrangement", "make and explain a repeating pattern"),
+    "Creative Arts": ("Composition and visual communication", "line, shape, colour, balance, and intended meaning", "plan a composition and revise it against a design goal"),
+    "Electricity": ("Electrical circuits and installation safety", "series paths, circuit symbols, conductors, and isolation", "trace a supervised low-voltage circuit using a circuit diagram"),
+    "English": ("Reading comprehension and clear writing", "main ideas, evidence, vocabulary in context, and sentence structure", "support an inference with evidence from a passage"),
+    "English Activities": ("Listening, phonics, and early reading", "letter sounds, familiar words, listening, and oral expression", "match a spoken word to its sound pattern and use it in a sentence"),
+    "Environmental Activities": ("Water, soil, and local environmental care", "local resources, waste, habitats, and conservation", "observe one local environmental issue and propose a practical action"),
+    "Essential Mathematics": ("Numeracy and mathematics in daily life", "number operations, measurement, money, and data", "solve a practical budgeting or measurement problem and show the working"),
+    "Fasihi ya Kiswahili": ("Uchambuzi wa fasihi ya Kiswahili", "dhamira, wahusika, mandhari, na matumizi ya lugha", "tumia ushahidi kutoka kwenye kifungu kueleza dhamira"),
+    "Fine Arts": ("Drawing, tone, and visual composition", "line, form, value, perspective, and visual emphasis", "use a light source to plan tones in a still-life drawing"),
+    "French": ("Salutations and simple French sentences", "greetings, articles, common verbs, and basic word order", "introduce yourself and ask a simple question in French"),
+    "General Science": ("Energy, materials, and scientific investigation", "forms of energy, material properties, and fair testing", "plan a simple comparison and record measurable observations"),
+    "Geography": ("Map skills, weather, and landforms", "map symbols, scale, direction, rainfall, and relief", "use a map and observations to explain a local landscape pattern"),
+    "German": ("German greetings and sentence structure", "greetings, noun articles, common verbs, and word order", "introduce yourself and form a simple German sentence"),
+    "HRE": ("Hindu teachings and values in daily life", "dharma, respect, responsibility, and Hindu traditions", "relate a teaching or story to a respectful everyday decision"),
+    "History and Citizenship": ("Historical sources and responsible citizenship", "primary sources, chronology, rights, duties, and public participation", "compare a source with another account and justify a civic action"),
+    "Home Science": ("Nutrition, food safety, and household resources", "balanced meals, hygiene, food storage, and resource use", "plan a balanced meal and explain safe preparation choices"),
+    "ICT": ("Digital information, productivity, and online safety", "files, data, digital communication, privacy, and security", "organize information and identify a safe response to an online risk"),
+    "IRE": ("Islamic values, worship, and community responsibility", "Qur'anic guidance, compassion, honesty, and responsible conduct", "apply an Islamic value to a practical community situation"),
+    "Indigenous Language": ("Oral language and community vocabulary", "listening, pronunciation, local vocabulary, and respectful conversation", "record and use a familiar expression in a short dialogue"),
+    "Indigenous Languages": ("Oral literature and language heritage", "oral narratives, proverbs, vocabulary, and cultural context", "interpret a proverb or story and explain its context"),
+    "Integrated Science": ("Scientific investigations and living systems", "variables, observations, ecosystems, and evidence-based explanations", "plan a fair investigation and support a conclusion with observations"),
+    "Kiswahili": ("Ufahamu na mawasiliano ya Kiswahili", "msamiati, sarufi, ufahamu, na ujenzi wa sentensi", "soma kifungu kifupi na uunge mkono jibu kwa ushahidi"),
+    "Kiswahili Lugha": ("Sarufi na matumizi ya Kiswahili", "aina za maneno, ngeli, upatanisho, na uandishi", "rekebisha sentensi kwa kutumia upatanisho sahihi wa kisarufi"),
+    "Literature in English": ("Poetry, prose, and dramatic methods", "voice, imagery, character, setting, and theme", "support an interpretation of a text with a relevant quotation"),
+    "Mandarin": ("Mandarin tones and everyday expressions", "tone, pinyin, greetings, and simple sentence patterns", "listen for tone differences and use a greeting in context"),
+    "Marine and Fisheries Technology": ("Aquatic ecosystems and sustainable fisheries", "water quality, aquatic habitats, fish handling, and conservation", "interpret a water-quality observation and suggest a sustainable practice"),
+    "Mathematics": ("Number, ratio, and problem solving", "place value, fractions, ratio, and checking calculations", "model a real problem with calculations and explain the answer"),
+    "Media Technology": ("Media production and responsible communication", "audience, framing, sound, editing, and source attribution", "plan a short media message and identify its intended audience"),
+    "Metalwork": ("Metal properties, tools, and safe joining", "measurement, material choice, marking out, and joining methods", "choose a suitable joining method for a supervised model task"),
+    "Music and Dance": ("Rhythm, pitch, and movement patterns", "steady beat, pitch, dynamics, and coordinated movement", "perform and compare a short rhythm or movement sequence"),
+    "Physical Education": ("Fitness, movement, and healthy participation", "warm-up, coordination, fitness components, and recovery", "plan a safe warm-up and identify the fitness skill it develops"),
+    "Physics": ("Forces, energy, and electrical measurements", "motion, energy transfer, current, potential difference, and resistance", "take readings in a supervised circuit and explain a relationship"),
+    "Power Mechanics": ("Mechanical systems and engine maintenance", "motion transfer, components, routine inspection, and workshop safety", "trace how a mechanical system transfers motion"),
+    "Pre-Technical Studies": ("Design process, materials, and technical drawing", "design briefs, measurement, material properties, and evaluation", "make a dimensioned plan and evaluate a model against its brief"),
+    "Science and Technology": ("Materials, living things, and design solutions", "observation, material properties, simple systems, and responsible design", "test a simple design and record evidence before improving it"),
+    "Social Studies": ("Maps, communities, and shared responsibilities", "location, community resources, culture, and civic participation", "use a map or local evidence to explain a community issue"),
+    "Sports and Recreation": ("Game skills, rules, and inclusive participation", "movement skills, fair play, teamwork, and adaptation", "apply a game skill while following rules and including teammates"),
+    "Theatre and Film": ("Story, performance, and visual storytelling", "script, character, staging, storyboard, and audience", "plan a short scene with a clear sequence and performance roles"),
+    "Woodwork": ("Timber, measurement, and safe construction", "wood grain, marking out, joints, finishing, and tool safety", "plan and measure a small supervised timber model"),
 }
 
 
 def upsert_game_topic(subject, title, description, levels):
     topic, _ = GameTopic.objects.update_or_create(
         subject=subject,
-        title=title,
         defaults={"description": description, "is_active": True},
     )
     for difficulty, questions in enumerate(levels, start=1):
@@ -231,6 +172,78 @@ def upsert_game_topic(subject, title, description, levels):
                     "is_active": True,
                 },
             )
+    return topic
+
+
+def generated_subject_levels(subject, curriculum, peers):
+    focus, concept, practice = curriculum
+
+    def evidence(item):
+        return f"Observations about {item[1]} recorded while learners {item[2]}"
+
+    def application(item):
+        return f"Use {item[1]} to {item[2]} in {item[0]}"
+
+    def conclusion(item):
+        return f"{item[0]} can be explained using {item[1]} and evidence from the task"
+
+    questions = (
+        (f"Which topical focus belongs to {subject.name}?", focus, [item[0] for item in peers], f"{focus} is the selected CBE focus for {subject.name}."),
+        (f"Which key idea supports learning about {focus}?", concept, [item[1] for item in peers], f"{concept.capitalize()} is central to {focus}."),
+        (f"Which activity gives practice with {focus}?", practice, [item[2] for item in peers], f"Learners can {practice} to explore {focus}."),
+        (f"What evidence should be recorded during {focus}?", evidence(curriculum), [evidence(item) for item in peers], f"Record observations about {concept} while completing the practical task."),
+        (f"Which scenario applies {subject.name} learning about {focus}?", application(curriculum), [application(item) for item in peers], f"Apply {concept} through a task connected to {focus}."),
+        (f"Which conclusion connects {focus} with its key idea?", conclusion(curriculum), [conclusion(item) for item in peers], f"A sound conclusion links {focus} to {concept} and the evidence collected."),
+    )
+
+    levels = []
+    for difficulty in range(1, 4):
+        level_questions = []
+        for order in range(2):
+            prompt, answer, distractors, explanation = questions[(difficulty - 1) * 2 + order]
+            distractors = list(dict.fromkeys(choice for choice in distractors if choice != answer))[:3]
+            while len(distractors) < 3:
+                distractors.append(f"An unrelated idea from another {subject.category} topic")
+            correct_choice = (difficulty + order) % 4
+            choices = distractors
+            choices.insert(correct_choice, answer)
+            level_questions.append((prompt, choices, correct_choice, explanation))
+        levels.append(tuple(level_questions))
+    return tuple(levels)
+
+
+def upsert_subject_guide(subject, curriculum, created_by):
+    focus, concept, practice = curriculum
+    title = f"{subject.grade_level} {subject.name} Topical Study Guide"
+    description = f"CBE study guide for {subject.grade_level} {subject.name}, focused on {focus}."
+    content_outline = (
+        f"Topic: {focus}\n"
+        f"Key concept: {concept.capitalize()}.\n"
+        f"Guided learning activity: Learners {practice}.\n"
+        "Review: explain the idea, practise the skill, and use evidence to check understanding."
+    )
+    exercises = (
+        f"1. Explain {concept} in your own words.\n"
+        f"2. Complete this task: {practice}.\n"
+        f"3. Record one observation or example connected to {focus}.\n"
+        "4. Write a short conclusion using evidence from your work."
+    )
+    SubjectBook.objects.update_or_create(
+        subject=subject,
+        title=title,
+        defaults={
+            "grade_level": subject.grade_level,
+            "author_name": "Peak CBE Learning Team",
+            "docket": subject.docket,
+            "description": description,
+            "content_outline": content_outline,
+            "exercises": exercises,
+            "diagrams": "",
+            "file_url": "",
+            "created_by": created_by,
+            "is_teacher_uploaded": False,
+        },
+    )
 
 
 class Command(BaseCommand):
@@ -372,16 +385,56 @@ class Command(BaseCommand):
                 upsert_game_topic(subject, title, description, levels)
                 authored_subjects.add(subject.pk)
 
-            for subject in SubjectCatalog.objects.filter(is_active=True):
+            active_subjects = list(SubjectCatalog.objects.filter(is_active=True).select_related("docket"))
+            subjects_by_category = {}
+            for subject in active_subjects:
+                subjects_by_category.setdefault(subject.category, {})[subject.name] = SUBJECT_CURRICULUM_CONTENT[
+                    subject.name
+                ]
+
+            for subject in active_subjects:
                 if subject.pk in authored_subjects:
                     continue
-                title, description, levels = CBE_CATEGORY_GAME_CONTENT[subject.category]
-                upsert_game_topic(
-                    subject,
-                    f"{subject.name}: {title}",
-                    f"{subject.grade_level} {subject.name}. {description}",
-                    levels,
-                )
+                curriculum = SUBJECT_CURRICULUM_CONTENT[subject.name]
+                peers = [
+                    peer_curriculum
+                    for peer_name, peer_curriculum in subjects_by_category[subject.category].items()
+                    if peer_name != subject.name
+                ]
+                title = f"{subject.name}: {curriculum[0]}"
+                description = f"{subject.grade_level} {subject.name}. Focus: {curriculum[0]}. Key idea: {curriculum[1]}."
+                topic = GameTopic.objects.filter(
+                    subject=subject,
+                    created_by__isnull=True,
+                ).order_by("id").first()
+                if topic:
+                    topic.title = title
+                    topic.description = description
+                    topic.is_active = True
+                    topic.save(update_fields=("title", "description", "is_active"))
+                else:
+                    topic = GameTopic.objects.create(
+                        subject=subject,
+                        title=title,
+                        description=description,
+                    )
+                for difficulty, questions in enumerate(
+                    generated_subject_levels(subject, curriculum, peers),
+                    start=1,
+                ):
+                    for order, (prompt, choices, correct_choice, explanation) in enumerate(questions):
+                        GameQuestion.objects.update_or_create(
+                            topic=topic,
+                            difficulty=difficulty,
+                            order=order,
+                            defaults={
+                                "prompt": prompt,
+                                "choices": choices,
+                                "correct_choice": correct_choice,
+                                "explanation": explanation,
+                                "is_active": True,
+                            },
+                        )
 
         demo_users = [
             ("admin@school.com", "admin123", "Mary", "King", "admin", "0721000000"),
@@ -484,5 +537,13 @@ class Command(BaseCommand):
                         "created_by": User.objects.filter(role__in=["teacher", "admin"]).first(),
                     },
                 )
+
+        cbe_author = User.objects.filter(role="admin", is_active=True).first()
+        for subject in SubjectCatalog.objects.filter(is_active=True).select_related("docket"):
+            upsert_subject_guide(
+                subject,
+                SUBJECT_CURRICULUM_CONTENT[subject.name],
+                cbe_author,
+            )
 
         self.stdout.write(self.style.SUCCESS("Peak Group of Schools demo data is ready."))

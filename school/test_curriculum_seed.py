@@ -1,7 +1,7 @@
 from django.core.management import call_command
 from django.test import TestCase
 
-from .models import GameQuestion, GameTopic, SubjectCatalog, SubjectDocket
+from .models import GameQuestion, GameTopic, SubjectBook, SubjectCatalog, SubjectDocket
 
 
 class CurriculumSeedTests(TestCase):
@@ -62,6 +62,21 @@ class CurriculumSeedTests(TestCase):
             .count(),
             active_subjects.count(),
         )
+        guides = SubjectBook.objects.filter(title__endswith="Topical Study Guide")
+        self.assertEqual(guides.count(), active_subjects.count())
+        for subject in active_subjects:
+            with self.subTest(guide_subject=subject.name, grade=subject.grade_level):
+                guide = guides.get(subject=subject)
+                self.assertIn(subject.name, guide.title)
+                self.assertIn(subject.grade_level, guide.title)
+                self.assertIn(subject.name, guide.description)
+                self.assertTrue(guide.content_outline)
+                self.assertTrue(guide.exercises)
+
+        agriculture = active_subjects.get(name="Agriculture", grade_level="Grade 7")
+        literature = active_subjects.get(name="Literature in English", grade_level="Grade 10")
+        self.assertIn("crop production", guides.get(subject=agriculture).content_outline.lower())
+        self.assertIn("poetry", guides.get(subject=literature).content_outline.lower())
         for topic in GameTopic.objects.filter(is_active=True):
             with self.subTest(topic=topic.title):
                 self.assertEqual(topic.questions.filter(is_active=True, difficulty=1).count(), 2)
