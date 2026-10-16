@@ -21,6 +21,7 @@
           <a href="/billing">Billing</a><a href="/support">Support</a>
           {% if request.session.user_id %}
             <a href="/dashboard">Dashboard</a>
+            <a href="/games">Games Corner</a>
             {% if request.session.role == 'admin' %}<a href="/school-admin">School administration</a>{% endif %}
             {% if request.session.role == 'teacher' or request.session.role == 'admin' %}<a href="/staff-room">Staff room</a>{% endif %}
             <a href="/logout" class="btn btn-light">Logout</a>

@@ -5,19 +5,23 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.core.exceptions import SuspiciousFileOperation
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.core.files.storage import default_storage
 from django.db import connection
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_http_methods, require_POST
 
 from . import google_meet, mpesa, paypal, stripe_card, whatsapp
-from .forms import CreateAccountForm, SchoolStaffProfileForm
+from .forms import CreateAccountForm, GameQuestionForm, GameTopicForm, SchoolStaffProfileForm
 from .models import (
     Exam,
+    GameProgress,
+    GameQuestion,
+    GameTopic,
     Invoice,
     Payment,
     PracticalAttendance,
@@ -117,6 +121,208 @@ def dashboard(request):
         "total_invoices": Invoice.objects.count(),
     }
     return render(request, "dashboard.html", context)
+
+
+def games_corner(request):
+    user = _current_user(request)
+    if not user:
+        return redirect("login")
+    if user.role not in ("student", "teacher", "admin"):
+        return redirect("dashboard")
+
+    grade_levels = list(
+        SubjectCatalog.objects.filter(is_active=True)
+        .values_list("grade_level", flat=True)
+        .distinct()
+    )
+
+    def grade_sort_key(grade):
+        try:
+            return (0, int(grade.split()[-1]))
+        except (AttributeError, ValueError):
+            return (1, grade.casefold())
+
+    grade_levels.sort(key=grade_sort_key)
+    requested_grade = request.GET.get("grade", "")
+    selected_grade = requested_grade if requested_grade in grade_levels else (grade_levels[0] if grade_levels else "")
+    subjects = SubjectCatalog.objects.filter(is_active=True, grade_level=selected_grade).select_related("docket")
+    try:
+        selected_subject_id = int(request.GET.get("subject", ""))
+    except ValueError:
+        selected_subject_id = None
+    selected_subject = subjects.filter(pk=selected_subject_id).first() if selected_subject_id else None
+    topics = []
+    progress_by_topic = {}
+    if selected_subject:
+        topics = list(
+            GameTopic.objects.filter(subject=selected_subject, is_active=True)
+            .annotate(
+                level_one_questions=Count("questions", filter=Q(questions__is_active=True, questions__difficulty=1)),
+                level_two_questions=Count("questions", filter=Q(questions__is_active=True, questions__difficulty=2)),
+                level_three_questions=Count("questions", filter=Q(questions__is_active=True, questions__difficulty=3)),
+            )
+            .order_by("title")
+        )
+        progress_by_topic = {
+            progress.topic_id: progress
+            for progress in GameProgress.objects.filter(user=user, topic__in=topics)
+        }
+        for topic in topics:
+            topic.progress = progress_by_topic.get(topic.pk)
+
+    return render(
+        request,
+        "games.html",
+        {
+            "grade_levels": grade_levels,
+            "selected_grade": selected_grade,
+            "subjects": subjects,
+            "selected_subject": selected_subject,
+            "topics": topics,
+            "progress_by_topic": progress_by_topic,
+            "is_staff": user.role in ("teacher", "admin"),
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def games_author(request):
+    user = _current_user(request)
+    if not user:
+        return redirect("login")
+    if user.role not in ("teacher", "admin"):
+        return redirect("dashboard")
+
+    topics = GameTopic.objects.filter(is_active=True, subject__is_active=True).select_related("subject")
+    topic_form = GameTopicForm()
+    question_form = GameQuestionForm(topics=topics)
+    if request.method == "POST" and request.POST.get("action") == "create-topic":
+        topic_form = GameTopicForm(request.POST)
+        if topic_form.is_valid():
+            topic = topic_form.save(commit=False)
+            topic.created_by = user
+            topic.save()
+            messages.success(request, "Game topic created. Add its questions by level.")
+            return redirect(f"{reverse('games_author')}?topic={topic.pk}")
+    elif request.method == "POST" and request.POST.get("action") == "add-question":
+        question_form = GameQuestionForm(request.POST, topics=topics)
+        if question_form.is_valid():
+            question = question_form.save()
+            messages.success(request, f"Question added to Level {question.difficulty}.")
+            return redirect(f"{reverse('games_author')}?topic={question.topic_id}")
+
+    try:
+        selected_topic_id = int(request.GET.get("topic", ""))
+    except ValueError:
+        selected_topic_id = None
+    selected_topic = topics.filter(pk=selected_topic_id).first() if selected_topic_id else None
+    topic_questions = list(selected_topic.questions.filter(is_active=True)) if selected_topic else []
+    return render(
+        request,
+        "games_author.html",
+        {
+            "topic_form": topic_form,
+            "question_form": question_form,
+            "topics": topics,
+            "selected_topic": selected_topic,
+            "topic_questions": topic_questions,
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def game_play(request, topic_id):
+    user = _current_user(request)
+    if not user:
+        return redirect("login")
+    if user.role not in ("student", "teacher", "admin"):
+        return redirect("dashboard")
+
+    topic = get_object_or_404(GameTopic, pk=topic_id, is_active=True, subject__is_active=True)
+    progress, _ = GameProgress.objects.get_or_create(user=user, topic=topic)
+    questions = list(
+        topic.questions.filter(is_active=True, difficulty=progress.current_level).order_by("order", "id")
+    )
+    feedback = ""
+    feedback_type = ""
+    selected_choice = None
+
+    if request.method == "POST" and request.POST.get("action") == "restart":
+        progress.current_level = 1
+        progress.unlocked_level = 1
+        progress.completed_level = 0
+        progress.question_index = 0
+        progress.score = 0
+        progress.attempts = 0
+        progress.save()
+        return redirect("game_play", topic_id=topic.pk)
+
+    state = "playing"
+    question = None
+    if not questions:
+        state = "not_ready"
+    elif progress.question_index >= len(questions):
+        state = "complete"
+    else:
+        question = questions[progress.question_index]
+
+    if request.method == "POST" and state == "playing" and question:
+        try:
+            submitted_question_id = int(request.POST.get("question_id", ""))
+            selected_choice = int(request.POST.get("choice", ""))
+        except ValueError:
+            submitted_question_id = -1
+            selected_choice = -1
+
+        if submitted_question_id != question.pk or not 0 <= selected_choice < len(question.choices):
+            feedback = "Choose one of the answers for the current question."
+            feedback_type = "error"
+        else:
+            progress.attempts += 1
+            if selected_choice != question.correct_choice:
+                progress.save(update_fields=("attempts", "updated_at"))
+                feedback = "Not passed yet. Try another answer to continue."
+                feedback_type = "error"
+            else:
+                progress.score += progress.current_level * 10
+                progress.question_index += 1
+                progress.save(update_fields=("score", "question_index", "attempts", "updated_at"))
+                if progress.question_index >= len(questions):
+                    progress.completed_level = max(progress.completed_level, progress.current_level)
+                    next_level = progress.current_level + 1
+                    has_next_level = topic.questions.filter(is_active=True, difficulty=next_level).exists()
+                    if has_next_level:
+                        progress.current_level = next_level
+                        progress.unlocked_level = max(progress.unlocked_level, next_level)
+                        progress.question_index = 0
+                        feedback = f"Level {progress.completed_level} passed. Level {next_level} unlocked."
+                        feedback_type = "success"
+                    else:
+                        feedback = "Topic complete. You passed every available level."
+                        feedback_type = "success"
+                    progress.save()
+                else:
+                    return redirect("game_play", topic_id=topic.pk)
+                if feedback_type == "success":
+                    messages.success(request, feedback)
+                    return redirect("game_play", topic_id=topic.pk)
+
+    return render(
+        request,
+        "game_play.html",
+        {
+            "topic": topic,
+            "progress": progress,
+            "state": state,
+            "question": question,
+            "question_number": progress.question_index + 1,
+            "question_total": len(questions),
+            "feedback": feedback,
+            "feedback_type": feedback_type,
+            "selected_choice": selected_choice,
+            "choice_labels": ("A", "B", "C", "D"),
+        },
+    )
 
 
 @require_http_methods(["GET", "POST"])

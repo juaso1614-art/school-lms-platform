@@ -110,6 +110,70 @@ class SubjectCatalog(models.Model):
         return f"{self.name} ({self.grade_level})"
 
 
+class GameTopic(models.Model):
+    subject = models.ForeignKey(SubjectCatalog, on_delete=models.CASCADE, related_name="game_topics")
+    title = models.CharField(max_length=160)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_game_topics",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("subject__docket__display_order", "subject__grade_level", "title")
+        unique_together = (("subject", "title"),)
+
+    def __str__(self):
+        return f"{self.subject}: {self.title}"
+
+
+class GameQuestion(models.Model):
+    DIFFICULTY_CHOICES = [
+        (1, "Level 1 · Starter"),
+        (2, "Level 2 · Builder"),
+        (3, "Level 3 · Challenge"),
+    ]
+
+    topic = models.ForeignKey(GameTopic, on_delete=models.CASCADE, related_name="questions")
+    prompt = models.TextField()
+    choices = models.JSONField(default=list)
+    correct_choice = models.PositiveSmallIntegerField(default=0)
+    explanation = models.TextField(blank=True)
+    difficulty = models.PositiveSmallIntegerField(choices=DIFFICULTY_CHOICES, default=1)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True, db_index=True)
+
+    class Meta:
+        ordering = ("difficulty", "order", "id")
+
+    def __str__(self):
+        return f"{self.topic.title}: level {self.difficulty}, question {self.order + 1}"
+
+
+class GameProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_progress")
+    topic = models.ForeignKey(GameTopic, on_delete=models.CASCADE, related_name="learner_progress")
+    current_level = models.PositiveSmallIntegerField(default=1)
+    unlocked_level = models.PositiveSmallIntegerField(default=1)
+    completed_level = models.PositiveSmallIntegerField(default=0)
+    question_index = models.PositiveIntegerField(default=0)
+    score = models.PositiveIntegerField(default=0)
+    attempts = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at",)
+        unique_together = (("user", "topic"),)
+
+    def __str__(self):
+        return f"{self.user.email}: {self.topic}"
+
+
 class TeacherSubjectAssignment(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subject_assignments")
     subject = models.ForeignKey(SubjectCatalog, on_delete=models.CASCADE, related_name="teacher_assignments")

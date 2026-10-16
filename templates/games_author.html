@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Build Games | Games Corner{% endblock %}
+{% block content %}
+<section class="page-section games-page"><div class="container">
+  <a class="game-back-link" href="{% url 'games' %}">Games Corner</a>
+  <div class="section-heading left games-heading"><span class="eyebrow">Teacher workspace</span><h2>Build a game</h2><p>Attach question sets to any active grade and subject.</p></div>
+  <div class="game-author-layout">
+    <section class="panel game-author-panel" aria-labelledby="topic-form-heading">
+      <h3 id="topic-form-heading">Create a topic</h3>
+      <form method="post" class="game-author-form">
+        {% csrf_token %}<input type="hidden" name="action" value="create-topic">
+        {% for field in topic_form %}<label>{{ field.label }}{{ field }}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>{% endfor %}
+        <button class="btn btn-primary" type="submit">Create topic</button>
+      </form>
+    </section>
+
+    <section class="panel game-author-panel" aria-labelledby="question-form-heading">
+      <h3 id="question-form-heading">Add multiple-choice question</h3>
+      <form method="post" class="game-author-form">
+        {% csrf_token %}<input type="hidden" name="action" value="add-question">
+        {% for field in question_form %}<label>{{ field.label }}{{ field }}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>{% endfor %}
+        <button class="btn btn-primary" type="submit">Add question</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="game-author-bank" aria-labelledby="question-bank-heading">
+    <div class="games-section-heading"><div><span class="eyebrow">Question bank</span><h3 id="question-bank-heading">Topics and questions</h3></div></div>
+    <form method="get" class="game-topic-picker">
+      <label>Topic<select name="topic">{% for topic in topics %}<option value="{{ topic.pk }}" {% if selected_topic and selected_topic.pk == topic.pk %}selected{% endif %}>{{ topic.subject.grade_level }} · {{ topic.subject.name }} · {{ topic.title }}</option>{% endfor %}</select></label>
+      <button class="btn btn-light" type="submit">View questions</button>
+    </form>
+    {% if selected_topic %}
+      <h4>{{ selected_topic.title }} · {{ topic_questions|length }} questions</h4>
+      <ol class="game-question-bank-list">{% for question in topic_questions %}<li><span>Level {{ question.difficulty }}</span><strong>{{ question.prompt }}</strong></li>{% empty %}<li>No questions added yet.</li>{% endfor %}</ol>
+    {% else %}<p class="games-empty-inline">Select or create a topic to manage its question bank.</p>{% endif %}
+  </section>
+</div></section>
+{% endblock %}

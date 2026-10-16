@@ -12,12 +12,17 @@ from . import whatsapp
 from . import google_meet
 from .models import (
     Exam,
+    GameProgress,
+    GameQuestion,
+    GameTopic,
     Invoice,
     Payment,
     PracticalAttendance,
     ResourceMaterial,
     SchoolClass,
     SchoolStaffProfile,
+    SubjectCatalog,
+    SubjectDocket,
     SupportTicket,
     User,
 )
@@ -67,6 +72,163 @@ class PortalTests(TestCase):
         self.assertContains(response, "Digital voltmeter")
         self.assertContains(response, "Record six pairs of readings")
         self.assertContains(response, "Direct WhatsApp group messaging is not configured.")
+
+    def create_game_topic(self):
+        docket = SubjectDocket.objects.create(
+            title="Junior Secondary",
+            slug=f"games-docket-{SubjectDocket.objects.count()}",
+            grade_band="junior_secondary",
+        )
+        subject = SubjectCatalog.objects.create(
+            name="Mathematics",
+            code=f"GAMES-MATH-{SubjectCatalog.objects.count()}",
+            grade_level="Grade 7",
+            docket=docket,
+            category="core",
+        )
+        return GameTopic.objects.create(subject=subject, title="Fractions")
+
+    def test_game_progress_requires_correct_answers_and_unlocks_next_level(self):
+        topic = self.create_game_topic()
+        starter_first = GameQuestion.objects.create(
+            topic=topic,
+            difficulty=1,
+            order=0,
+            prompt="Which fraction is one half?",
+            choices=["1/3", "1/4", "2/4", "3/4"],
+            correct_choice=2,
+        )
+        starter_second = GameQuestion.objects.create(
+            topic=topic,
+            difficulty=1,
+            order=1,
+            prompt="What is 1/4 + 1/4?",
+            choices=["1/2", "1/4", "1", "2/4"],
+            correct_choice=0,
+        )
+        builder_question = GameQuestion.objects.create(
+            topic=topic,
+            difficulty=2,
+            order=0,
+            prompt="What is 2/3 + 1/6?",
+            choices=["3/9", "5/6", "1/2", "1"],
+            correct_choice=1,
+        )
+        session = self.client.session
+        session["user_id"] = self.user.pk
+        session.save()
+
+        response = self.client.get(reverse("game_play", args=[topic.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Level 1 of 3")
+
+        response = self.client.post(
+            reverse("game_play", args=[topic.pk]),
+            {"action": "answer", "question_id": starter_first.pk, "choice": "0"},
+        )
+        self.assertContains(response, "Not passed yet")
+        progress = GameProgress.objects.get(user=self.user, topic=topic)
+        self.assertEqual(progress.question_index, 0)
+        self.assertEqual(progress.attempts, 1)
+
+        response = self.client.post(
+            reverse("game_play", args=[topic.pk]),
+            {"action": "answer", "question_id": starter_first.pk, "choice": "2"},
+        )
+        self.assertRedirects(response, reverse("game_play", args=[topic.pk]))
+        response = self.client.post(
+            reverse("game_play", args=[topic.pk]),
+            {"action": "answer", "question_id": starter_second.pk, "choice": "0"},
+            follow=True,
+        )
+        self.assertContains(response, "Level 2 of 3")
+        progress.refresh_from_db()
+        self.assertEqual(progress.completed_level, 1)
+        self.assertEqual(progress.unlocked_level, 2)
+        self.assertEqual(progress.current_level, 2)
+
+        response = self.client.post(
+            reverse("game_play", args=[topic.pk]),
+            {"action": "answer", "question_id": builder_question.pk, "choice": "1"},
+            follow=True,
+        )
+        self.assertContains(response, "All available levels complete")
+        progress.refresh_from_db()
+        self.assertEqual(progress.completed_level, 2)
+
+    def test_games_corner_handles_legacy_grade_labels(self):
+        docket = SubjectDocket.objects.create(
+            title="Legacy docket",
+            slug="games-legacy-docket",
+            grade_band="senior_secondary",
+        )
+        subject = SubjectCatalog.objects.create(
+            name="Legacy subject",
+            code="GAMES-LEGACY-F4",
+            grade_level="f4",
+            docket=docket,
+        )
+        session = self.client.session
+        session["user_id"] = self.user.pk
+        session.save()
+
+        response = self.client.get(reverse("games"), {"grade": "f4", "subject": subject.pk})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Legacy subject")
+
+    def test_teacher_can_author_topics_and_levelled_questions(self):
+        teacher = User.objects.create(
+            email="games-teacher@example.com",
+            first_name="John",
+            last_name="Mwangi",
+            role="teacher",
+        )
+        docket = SubjectDocket.objects.create(
+            title="Junior Secondary",
+            slug="games-author-docket",
+            grade_band="junior_secondary",
+        )
+        subject = SubjectCatalog.objects.create(
+            name="Science",
+            code="GAMES-SCI-G7",
+            grade_level="Grade 7",
+            docket=docket,
+            category="science",
+        )
+        session = self.client.session
+        session["user_id"] = teacher.pk
+        session.save()
+
+        response = self.client.get(reverse("games_author"))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(
+            reverse("games_author"),
+            {"action": "create-topic", "subject": subject.pk, "title": "Matter", "description": "States of matter"},
+        )
+        topic = GameTopic.objects.get(title="Matter")
+        self.assertEqual(topic.created_by, teacher)
+        self.assertRedirects(response, f"{reverse('games_author')}?topic={topic.pk}")
+
+        response = self.client.post(
+            reverse("games_author"),
+            {
+                "action": "add-question",
+                "topic": topic.pk,
+                "difficulty": "2",
+                "prompt": "Which state keeps its volume?",
+                "option_a": "Solid",
+                "option_b": "Gas",
+                "option_c": "Plasma",
+                "option_d": "None",
+                "correct_choice": "0",
+                "explanation": "Solids have a fixed volume.",
+            },
+        )
+        self.assertRedirects(response, f"{reverse('games_author')}?topic={topic.pk}")
+        question = GameQuestion.objects.get(topic=topic)
+        self.assertEqual(question.difficulty, 2)
+        self.assertEqual(question.choices[question.correct_choice], "Solid")
 
     def test_exams_page_includes_whatsapp_practical_invite(self):
         response = self.client.get(reverse("exams"))

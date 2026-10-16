@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Games Corner | Peak Group of Schools{% endblock %}
+{% block content %}
+<section class="page-section games-page"><div class="container">
+  <div class="section-heading left games-heading"><span class="eyebrow">CBE practice</span><h2>Games Corner</h2><p>Choose a grade and subject to find a topic.</p></div>
+  <div class="games-toolbar">
+    <form method="get" class="games-filter-form">
+      <label>Grade
+        <select name="grade">
+          {% for grade in grade_levels %}<option value="{{ grade }}" {% if grade == selected_grade %}selected{% endif %}>{{ grade }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Subject
+        <select name="subject" {% if not subjects %}disabled{% endif %}>
+          {% for subject in subjects %}<option value="{{ subject.pk }}" {% if selected_subject and subject.pk == selected_subject.pk %}selected{% endif %}>{{ subject.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <button class="btn btn-primary" type="submit">Show topics</button>
+    </form>
+    {% if is_staff %}<a class="btn btn-light" href="{% url 'games_author' %}">Build a game</a>{% endif %}
+  </div>
+
+  {% if selected_subject %}
+  <section class="games-topic-section" aria-labelledby="games-topics-heading">
+    <div class="games-section-heading"><div><span class="eyebrow">{{ selected_subject.grade_level }} · {{ selected_subject.get_category_display }}</span><h3 id="games-topics-heading">{{ selected_subject.name }}</h3></div><span class="games-topic-count">{{ topics|length }} topics</span></div>
+    <div class="game-topic-list">
+      {% for topic in topics %}
+      <article class="game-topic-row">
+        <div class="game-topic-main">
+          <span class="eyebrow">{{ topic.subject.grade_level }} · {{ topic.subject.name }}</span>
+          <h3>{{ topic.title }}</h3>
+          {% if topic.description %}<p>{{ topic.description }}</p>{% endif %}
+          <div class="game-level-list" aria-label="Available difficulty levels">
+            <span class="{% if topic.progress and topic.progress.completed_level >= 1 %}level-passed{% elif topic.level_one_questions %}level-ready{% else %}level-locked{% endif %}">Starter</span>
+            <span class="{% if topic.progress and topic.progress.completed_level >= 2 %}level-passed{% elif topic.level_two_questions and topic.progress and topic.progress.unlocked_level >= 2 %}level-ready{% else %}level-locked{% endif %}">Builder</span>
+            <span class="{% if topic.progress and topic.progress.completed_level >= 3 %}level-passed{% elif topic.level_three_questions and topic.progress and topic.progress.unlocked_level >= 3 %}level-ready{% else %}level-locked{% endif %}">Challenge</span>
+          </div>
+        </div>
+        <div class="game-topic-action">
+          {% if topic.level_one_questions %}<a class="btn btn-primary" href="{% url 'game_play' topic.pk %}">Play</a>{% else %}<span class="game-topic-unavailable">Level 1 being prepared</span>{% endif %}
+          {% if is_staff %}<a class="game-manage-link" href="{% url 'games_author' %}?topic={{ topic.pk }}">Edit questions</a>{% endif %}
+        </div>
+      </article>
+      {% empty %}
+      <div class="games-empty"><h3>No topics added yet</h3><p>This subject is ready for game content.</p>{% if is_staff %}<a href="{% url 'games_author' %}" class="btn btn-primary">Create a topic</a>{% endif %}</div>
+      {% endfor %}
+    </div>
+  </section>
+  {% else %}
+  <div class="games-empty"><h3>Select a subject</h3><p>Choose a grade and subject to view its games.</p></div>
+  {% endif %}
+</div></section>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import SchoolStaffProfile, User
+from .models import GameQuestion, GameTopic, SchoolStaffProfile, SubjectCatalog, User
 
 
 class CreateAccountForm(forms.Form):
@@ -44,4 +44,55 @@ class SchoolStaffProfileForm(forms.ModelForm):
             "department",
             "campus",
             "staff_id",
+        )
+
+
+class GameTopicForm(forms.ModelForm):
+    class Meta:
+        model = GameTopic
+        fields = ("subject", "title", "description")
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["subject"].queryset = SubjectCatalog.objects.filter(is_active=True).select_related("docket")
+
+
+class GameQuestionForm(forms.Form):
+    topic = forms.ModelChoiceField(queryset=GameTopic.objects.none())
+    difficulty = forms.TypedChoiceField(choices=GameQuestion.DIFFICULTY_CHOICES, coerce=int)
+    prompt = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), max_length=1200)
+    option_a = forms.CharField(max_length=240, label="Option A")
+    option_b = forms.CharField(max_length=240, label="Option B")
+    option_c = forms.CharField(max_length=240, label="Option C")
+    option_d = forms.CharField(max_length=240, label="Option D")
+    correct_choice = forms.TypedChoiceField(
+        choices=((0, "A"), (1, "B"), (2, "C"), (3, "D")),
+        coerce=int,
+        label="Correct answer",
+    )
+    explanation = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 2}))
+
+    def __init__(self, *args, topics=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["topic"].queryset = topics if topics is not None else GameTopic.objects.filter(is_active=True)
+
+    def save(self):
+        topic = self.cleaned_data["topic"]
+        difficulty = self.cleaned_data["difficulty"]
+        return GameQuestion.objects.create(
+            topic=topic,
+            difficulty=difficulty,
+            order=topic.questions.filter(difficulty=difficulty).count(),
+            prompt=self.cleaned_data["prompt"],
+            choices=[
+                self.cleaned_data["option_a"],
+                self.cleaned_data["option_b"],
+                self.cleaned_data["option_c"],
+                self.cleaned_data["option_d"],
+            ],
+            correct_choice=self.cleaned_data["correct_choice"],
+            explanation=self.cleaned_data["explanation"],
         )
