@@ -23,6 +23,7 @@ from .models import (
     PracticalAttendance,
     ResourceMaterial,
     SchoolClass,
+    SchoolStaffProfile,
     SupportTicket,
     User,
 )
@@ -120,6 +121,39 @@ def staff_room(request):
         return redirect("login")
 
     if request.method == "POST":
+        staff_form_fields = (
+            "staff_role",
+            "staff_full_name",
+            "staff_email",
+            "staff_phone",
+            "department",
+            "campus",
+            "staff_id",
+        )
+        if any(field in request.POST for field in staff_form_fields):
+            required_fields = {"staff_role", "staff_full_name", "staff_email", "staff_id"}
+            missing = [field for field in sorted(required_fields) if not request.POST.get(field, "").strip()]
+            if missing:
+                messages.error(request, "Complete the required staff details before saving the profile.")
+                return redirect("staff_room")
+
+            profile = SchoolStaffProfile.objects.filter(staff_id=request.POST["staff_id"].strip()).first()
+            if profile:
+                messages.error(request, "A staff profile with this staff ID already exists.")
+                return redirect("staff_room")
+
+            SchoolStaffProfile.objects.create(
+                full_name=request.POST["staff_full_name"].strip(),
+                email=request.POST["staff_email"].strip(),
+                phone=request.POST.get("staff_phone", "").strip(),
+                role=request.POST["staff_role"].strip(),
+                department=request.POST.get("department", "").strip(),
+                campus=request.POST.get("campus", "").strip(),
+                staff_id=request.POST["staff_id"].strip(),
+            )
+            messages.success(request, "School leadership profile saved successfully.")
+            return redirect("staff_room")
+
         upload = request.FILES.get("material_file")
         allowed_extensions = {
             ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx",
@@ -154,7 +188,9 @@ def staff_room(request):
         {
             "user": user,
             "resources": ResourceMaterial.objects.order_by("-id")[:8],
+            "staff_profiles": SchoolStaffProfile.objects.order_by("-id")[:8],
             "total_resources": ResourceMaterial.objects.count(),
+            "total_staff_profiles": SchoolStaffProfile.objects.count(),
         },
     )
 

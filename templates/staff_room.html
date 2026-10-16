@@ -3,7 +3,7 @@
 {% block title %}Staff Room | Wazito Schools{% endblock %}
 {% block content %}
 <section class="page-section"><div class="container">
-  <div class="section-heading left"><span class="eyebrow">Teacher and admin workspace</span><h2>Staff room</h2><p>Upload teaching materials and keep the digital library current.</p></div>
+  <div class="section-heading left"><span class="eyebrow">Teacher and admin workspace</span><h2>Staff room</h2><p>Upload teaching materials, maintain school leadership records, and keep key staff information current.</p></div>
   <div class="staff-room-grid">
     <section class="panel staff-upload-panel" aria-labelledby="upload-heading">
       <h3 id="upload-heading">Add library material</h3>
@@ -18,6 +18,30 @@
         <button type="submit" class="btn btn-primary">Upload to library</button>
       </form>
     </section>
+
+    <section class="panel staff-upload-panel" aria-labelledby="profile-heading">
+      <h3 id="profile-heading">Add school staff profile</h3>
+      <form method="post" class="staff-upload-form">{% csrf_token %}
+        <label>Role
+          <select name="staff_role" required>
+            <option value="">Select role</option>
+            <option value="principal">Principal</option>
+            <option value="deputy_principal">Deputy Principal</option>
+            <option value="director">Director</option>
+            <option value="head_of_department">Head of Department</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </label>
+        <label>Full name<input type="text" name="staff_full_name" maxlength="200" required /></label>
+        <label>Email<input type="email" name="staff_email" maxlength="254" required /></label>
+        <label>Phone<input type="tel" name="staff_phone" maxlength="30" /></label>
+        <label>Department<input type="text" name="department" maxlength="120" /></label>
+        <label>Campus<input type="text" name="campus" maxlength="120" /></label>
+        <label>Staff ID<input type="text" name="staff_id" maxlength="80" required /></label>
+        <button type="submit" class="btn btn-primary">Save staff details</button>
+      </form>
+    </section>
+
     <section class="staff-library-panel" aria-labelledby="recent-materials-heading">
       <div class="staff-list-heading"><div><span class="eyebrow">{{ total_resources }} total</span><h3 id="recent-materials-heading">Recent library materials</h3></div><a href="{% url 'library' %}">Open library</a></div>
       <ul class="list staff-resource-list">
@@ -25,6 +49,15 @@
           <li><strong>{{ resource.title }}</strong><span>{{ resource.subject }} / {{ resource.grade_level }} · {{ resource.resource_type }}</span><span>Added by {{ resource.uploaded_by }}</span></li>
         {% empty %}
           <li>No materials have been uploaded yet.</li>
+        {% endfor %}
+      </ul>
+
+      <div class="staff-list-heading" style="margin-top: 1.5rem;"><div><span class="eyebrow">{{ total_staff_profiles }} total</span><h3>Leadership profiles</h3></div></div>
+      <ul class="list staff-resource-list">
+        {% for staff in staff_profiles %}
+          <li><strong>{{ staff.full_name }}</strong><span>{{ staff.get_role_display }} · {{ staff.department }}</span><span>{{ staff.campus }} · {{ staff.email }}</span></li>
+        {% empty %}
+          <li>No leadership profiles have been uploaded yet.</li>
         {% endfor %}
       </ul>
       <p class="staff-shortcuts"><a href="{% url 'exams' %}">Manage exam papers</a><a href="{% url 'classes' %}">View classes</a></p>

@@ -5,6 +5,10 @@ from django.db import models
 class User(models.Model):
     ROLE_CHOICES = [
         ("admin", "Admin"),
+        ("principal", "Principal"),
+        ("deputy_principal", "Deputy Principal"),
+        ("director", "Director"),
+        ("head_of_department", "Head of Department"),
         ("teacher", "Teacher"),
         ("student", "Student"),
         ("parent", "Parent"),
@@ -42,6 +46,31 @@ class ResourceMaterial(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class SchoolStaffProfile(models.Model):
+    ROLE_CHOICES = [
+        ("principal", "Principal"),
+        ("deputy_principal", "Deputy Principal"),
+        ("director", "Director"),
+        ("head_of_department", "Head of Department"),
+        ("teacher", "Teacher"),
+    ]
+
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField(max_length=254)
+    phone = models.CharField(max_length=30, blank=True)
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES)
+    department = models.CharField(max_length=120, blank=True)
+    campus = models.CharField(max_length=120, blank=True)
+    staff_id = models.CharField(max_length=80, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.full_name} ({self.get_role_display()})"
 
 
 class SchoolClass(models.Model):

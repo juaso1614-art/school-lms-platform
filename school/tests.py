@@ -17,6 +17,7 @@ from .models import (
     PracticalAttendance,
     ResourceMaterial,
     SchoolClass,
+    SchoolStaffProfile,
     SupportTicket,
     User,
 )
@@ -398,6 +399,38 @@ class PortalTests(TestCase):
         self.assertEqual(material.file_url, "/media/library/lesson.pdf")
         self.assertEqual(material.uploaded_by, "John Mwangi")
         self.assertContains(self.client.get(reverse("library")), "Fractions lesson")
+
+    def test_staff_room_accepts_leadership_profile_uploads(self):
+        teacher = User.objects.create(
+            email="teacher@example.com",
+            first_name="John",
+            last_name="Mwangi",
+            role="teacher",
+        )
+        teacher.set_password("teacher-pass")
+        teacher.save()
+        session = self.client.session
+        session["user_id"] = teacher.pk
+        session.save()
+
+        response = self.client.post(
+            reverse("staff_room"),
+            {
+                "staff_role": "principal",
+                "staff_full_name": "Grace Njeri",
+                "staff_email": "grace.njeri@peakschools.ac.ke",
+                "staff_phone": "+254712345678",
+                "department": "School Leadership",
+                "campus": "Main Campus",
+                "staff_id": "PS-101",
+            },
+        )
+
+        self.assertRedirects(response, reverse("staff_room"))
+        profile = SchoolStaffProfile.objects.get(staff_id="PS-101")
+        self.assertEqual(profile.role, "principal")
+        self.assertEqual(profile.campus, "Main Campus")
+        self.assertContains(self.client.get(reverse("staff_room")), "Grace Njeri")
 
     def test_teacher_can_schedule_one_hour_google_meet_lesson(self):
         response = self.client.post(
