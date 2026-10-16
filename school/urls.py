@@ -1,5 +1,7 @@
 from django.urls import path
 
+from electrical_lab import views as electrical_views
+
 from . import views
 
 
@@ -13,6 +15,8 @@ urlpatterns = [
     path("create-account", views.create_account, name="create_account"),
     path("logout", views.logout_view, name="logout"),
     path("dashboard", views.dashboard, name="dashboard"),
+    path("electrical-lab", electrical_views.lab_home, name="electrical_lab"),
+    path("electrical-lab/simulate", electrical_views.simulate_circuit, name="electrical_lab_simulate"),
     path("games", views.games_corner, name="games"),
     path("games/author", views.games_author, name="games_author"),
     path("games/topic/<int:topic_id>", views.game_play, name="game_play"),

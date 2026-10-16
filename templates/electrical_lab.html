@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Electrical Training Lab | Peak Group of Schools{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="/static/electrical-lab.css" />{% endblock %}
+{% block content %}
+<section class="electrical-page page-section"><div class="container">
+  <div class="electrical-heading">
+    <div><span class="eyebrow">Virtual vocational practice · Phase 1</span><h2>{{ exercise.title }}</h2><p>{{ exercise.description }}</p></div>
+    <div class="electrical-progress"><span class="eyebrow">Your progress</span><strong>{{ progress.attempts|default:0 }} attempts</strong><span>{% if progress.passed %}Exercise passed{% else %}Not passed yet{% endif %} · Best {{ progress.best_score|default:0 }}%</span></div>
+  </div>
+  <p class="electrical-safety-note"><strong>Virtual training only.</strong> This simulator does not authorize or guide real electrical work. Never work on live equipment.</p>
+
+  <div class="electrical-workspace">
+    <aside class="electrical-toolbox" aria-labelledby="toolbox-heading">
+      <span class="eyebrow">Components</span><h3 id="toolbox-heading">Add to board</h3>
+      <div class="electrical-component-tools">
+        <button type="button" class="electrical-tool" data-add-component="supply_ac"><span class="electrical-tool-icon supply-icon">AC</span><span><strong>AC supply</strong><small>L · N · PE</small></span><span class="tool-add">+</span></button>
+        <button type="button" class="electrical-tool" data-add-component="mcb"><span class="electrical-tool-icon mcb-icon">M</span><span><strong>MCB</strong><small>LINE · LOAD</small></span><span class="tool-add">+</span></button>
+        <button type="button" class="electrical-tool" data-add-component="switch_1way"><span class="electrical-tool-icon switch-icon">S</span><span><strong>1-way switch</strong><small>COM · L1 · L2</small></span><span class="tool-add">+</span></button>
+        <button type="button" class="electrical-tool" data-add-component="lamp"><span class="electrical-tool-icon lamp-icon">L</span><span><strong>Lamp</strong><small>L · N · PE</small></span><span class="tool-add">+</span></button>
+      </div>
+      <div class="electrical-tool-help"><strong>Build the circuit</strong><span>Add each component, then select one terminal and another to connect a wire.</span></div>
+    </aside>
+
+    <section class="electrical-board" aria-labelledby="board-heading">
+      <header class="electrical-board-header"><div><span class="eyebrow">Circuit builder</span><h3 id="board-heading">1-way lighting board</h3></div><span class="electrical-state" id="electrical-state">De-energized</span></header>
+      <div class="electrical-svg-wrap">
+        <svg id="circuit-board" class="circuit-board" viewBox="0 0 900 500" role="application" aria-label="Electrical circuit workspace. Drag components to position. Select two terminals to connect them.">
+          <defs><pattern id="board-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#dfe8e2" stroke-width="1"/></pattern></defs>
+          <rect x="0" y="0" width="900" height="500" fill="url(#board-grid)" />
+          <g id="circuit-wires"></g><g id="circuit-components"></g>
+        </svg>
+        <span class="board-hint" id="board-hint">Add components from the left, then connect their terminals.</span>
+      </div>
+      <div class="electrical-toolbar">
+        <button type="button" class="btn btn-light" id="rotate-component" disabled>Rotate selected</button>
+        <button type="button" class="btn btn-light" id="toggle-device" disabled>Toggle device</button>
+        <button type="button" class="btn btn-light" id="delete-component" disabled>Delete selected</button>
+        <button type="button" class="btn btn-light" id="reset-circuit">Reset board</button>
+        <span class="toolbar-spacer"></span>
+        <button type="button" class="btn btn-electrical-power" id="power-toggle" aria-pressed="false">Supply OFF</button>
+        <button type="button" class="btn btn-primary" id="test-circuit">Test circuit</button>
+      </div>
+    </section>
+
+    <aside class="electrical-inspector" aria-labelledby="inspector-heading">
+      <span class="eyebrow">Inspection</span><h3 id="inspector-heading">Circuit status</h3>
+      <div class="electrical-lamp-state"><span class="lamp-indicator" id="lamp-indicator"></span><div><strong id="lamp-state">Lamp off</strong><span id="voltage-reading">0 V</span></div></div>
+      <div class="electrical-diagnostics" id="electrical-diagnostics" role="status" aria-live="polite"><p>Run a test to check the circuit and receive diagnostics.</p></div>
+      <div class="selected-component" id="selected-component"><span class="eyebrow">Selected component</span><strong id="selected-component-name">None</strong><span id="selected-component-detail">Select a component on the board to inspect it.</span></div>
+      <div class="electrical-wire-summary"><span>Connections</span><strong id="wire-count">0</strong></div>
+    </aside>
+  </div>
+</div></section>
+<input type="hidden" id="electrical-attempt-id" value="{{ attempt.pk|default:'' }}">
+{{ component_specs|json_script:"component-specs" }}
+{{ initial_circuit|json_script:"initial-circuit" }}
+{{ initial_result|json_script:"initial-attempt-result" }}
+<script src="/static/electrical-lab.js" defer></script>
+{% endblock %}

@@ -1,0 +1,282 @@
+.electrical-page {
+  background: #f3f6f4;
+}
+
+.electrical-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.electrical-heading h2 {
+  margin-bottom: 6px;
+  color: var(--navy);
+}
+
+.electrical-heading p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+}
+
+.electrical-progress {
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+  padding-left: 16px;
+  border-left: 3px solid #23845b;
+}
+
+.electrical-progress strong { color: var(--navy); }
+.electrical-progress > span:last-child { color: var(--muted); font-size: 12px; }
+
+.electrical-safety-note {
+  display: flex;
+  gap: 7px;
+  margin: 0 0 18px;
+  padding: 11px 14px;
+  border-left: 4px solid #c86d27;
+  color: #67411f;
+  background: #fff4e8;
+  font-size: 12px;
+}
+
+.electrical-workspace {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.72fr) minmax(460px, 2.2fr) minmax(200px, 0.78fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.electrical-toolbox,
+.electrical-board,
+.electrical-inspector {
+  min-width: 0;
+  border: 1px solid #d5dfd9;
+  background: #ffffff;
+}
+
+.electrical-toolbox,
+.electrical-inspector { padding: 16px; }
+
+.electrical-toolbox h3,
+.electrical-inspector h3,
+.electrical-board-header h3 {
+  margin: 3px 0 13px;
+  color: var(--navy);
+  font-size: 16px;
+}
+
+.electrical-component-tools {
+  display: grid;
+  gap: 7px;
+}
+
+.electrical-tool {
+  display: grid;
+  grid-template-columns: 35px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 9px;
+  min-height: 56px;
+  padding: 7px;
+  border: 1px solid #dce5df;
+  border-radius: 4px;
+  color: var(--ink);
+  background: #fbfcfb;
+  text-align: left;
+  cursor: pointer;
+}
+
+.electrical-tool:hover,
+.electrical-tool:focus-visible {
+  border-color: #27835b;
+  background: #f0f7f2;
+}
+
+.electrical-tool > span:nth-child(2) { display: grid; gap: 2px; }
+.electrical-tool strong { color: var(--navy); font-size: 12px; }
+.electrical-tool small { color: var(--muted); font-size: 10px; }
+.tool-add { color: #21875a; font-size: 18px; font-weight: 700; text-align: center; }
+
+.electrical-tool-icon {
+  display: grid;
+  width: 32px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid #ced9d2;
+  border-radius: 4px;
+  color: #315344;
+  background: #edf4ef;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.electrical-tool-help {
+  display: grid;
+  gap: 5px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e1e8e4;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.electrical-tool-help strong { color: var(--navy); }
+
+.electrical-board { overflow: hidden; }
+
+.electrical-board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 4px;
+}
+
+.electrical-board-header .eyebrow { margin-bottom: 0; }
+.electrical-board-header h3 { margin-bottom: 8px; }
+
+.electrical-state {
+  padding: 5px 9px;
+  border-left: 3px solid #8b9991;
+  color: #53645a;
+  background: #eef2ef;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.electrical-svg-wrap {
+  position: relative;
+  overflow: auto;
+  background: #f7faf8;
+}
+
+.circuit-board {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  height: auto;
+  aspect-ratio: 9 / 5;
+  touch-action: none;
+  user-select: none;
+}
+
+.board-hint {
+  display: block;
+  min-height: 30px;
+  padding: 7px 12px;
+  border-top: 1px solid #e2e9e4;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.circuit-component { cursor: grab; outline: none; }
+.circuit-component:active { cursor: grabbing; }
+.component-shell { fill: #ffffff; stroke: #9eafa4; stroke-width: 2; }
+.circuit-component.is-selected .component-shell { stroke: #23845b; stroke-width: 3; }
+.component-symbol { fill: #f1f5f2; stroke: #485c50; stroke-width: 2; }
+.component-mark { fill: none; stroke: #334b3e; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.component-label { fill: #344a3d; font-size: 10px; font-weight: 800; text-anchor: middle; }
+.lamp-glass { fill: #fff8d9; stroke: #986b25; stroke-width: 2; }
+.circuit-component.is-energized .lamp-glass { fill: #ffe58a; stroke: #d08716; filter: drop-shadow(0 0 8px #e9ad32); }
+
+.circuit-terminal {
+  stroke: #ffffff;
+  stroke-width: 2;
+  cursor: crosshair;
+}
+.terminal-live { fill: #c3483e; }
+.terminal-neutral { fill: #395a83; }
+.terminal-earth { fill: #27835b; }
+.circuit-terminal.is-pending { stroke: #172c22; stroke-width: 4; r: 9px; }
+.terminal-label { fill: #43574b; font-size: 8px; font-weight: 800; text-anchor: middle; pointer-events: none; }
+.circuit-wire { fill: none; stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; pointer-events: stroke; cursor: pointer; }
+.wire-live { stroke: #c3483e; }
+.wire-neutral { stroke: #395a83; }
+.wire-earth { stroke: #27835b; stroke-dasharray: 7 3; }
+
+.electrical-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 11px 12px;
+  border-top: 1px solid #dce5df;
+  background: #ffffff;
+}
+
+.electrical-toolbar .btn { min-height: 36px; padding: 6px 10px; font-size: 11px; }
+.toolbar-spacer { flex: 1 1 auto; }
+.btn-electrical-power { color: #ffffff; background: #48564e; }
+.btn-electrical-power[aria-pressed="true"] { color: #172b1e; background: #b9ebc9; }
+
+.electrical-lamp-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-block: 1px solid #e0e7e2;
+}
+
+.electrical-lamp-state > div { display: grid; gap: 3px; }
+.electrical-lamp-state strong { color: var(--navy); font-size: 13px; }
+.electrical-lamp-state span:last-child { color: var(--muted); font-size: 11px; }
+.lamp-indicator { width: 15px; aspect-ratio: 1; border: 2px solid #9d8c55; border-radius: 50%; background: #eee5bf; }
+.lamp-indicator.is-lit { border-color: #d08716; background: #ffe58a; box-shadow: 0 0 12px #e9ad32; }
+
+.electrical-diagnostics {
+  min-height: 110px;
+  padding: 10px 0;
+  color: #526258;
+  font-size: 12px;
+}
+
+.electrical-diagnostics p { margin: 0; }
+.electrical-diagnostic-list { display: grid; gap: 8px; margin: 0; padding-left: 18px; }
+.electrical-diagnostic-list li { padding-left: 2px; }
+
+.selected-component {
+  display: grid;
+  gap: 5px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e7e2;
+}
+
+.selected-component .eyebrow { margin-bottom: 0; }
+.selected-component strong { color: var(--navy); font-size: 13px; }
+.selected-component > span:last-child { color: var(--muted); font-size: 11px; }
+.electrical-wire-summary { display: flex; justify-content: space-between; margin-top: 14px; padding-top: 10px; border-top: 1px solid #e0e7e2; color: var(--muted); font-size: 11px; }
+.electrical-wire-summary strong { color: var(--navy); }
+
+@media (max-width: 1080px) {
+  .electrical-workspace { grid-template-columns: minmax(170px, 0.65fr) minmax(0, 1.7fr); }
+  .electrical-inspector { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1.4fr 1fr auto; align-items: center; gap: 12px; }
+  .electrical-inspector > .eyebrow, .electrical-inspector > h3 { margin: 0; }
+  .electrical-inspector h3 { display: none; }
+  .electrical-lamp-state { border: 0; padding: 0; }
+  .electrical-diagnostics { min-height: 0; padding: 0; }
+  .selected-component { padding: 0; border: 0; }
+  .electrical-wire-summary { margin: 0; padding: 0; border: 0; }
+}
+
+@media (max-width: 720px) {
+  .electrical-heading { align-items: flex-start; flex-direction: column; }
+  .electrical-progress { min-width: 0; }
+  .electrical-safety-note { display: block; }
+  .electrical-safety-note strong { margin-right: 5px; }
+  .electrical-workspace { grid-template-columns: 1fr; }
+  .electrical-toolbox { order: 1; }
+  .electrical-board { order: 2; }
+  .electrical-inspector { order: 3; grid-column: auto; display: block; }
+  .electrical-inspector > .eyebrow { display: block; }
+  .electrical-inspector h3 { display: block; margin: 3px 0 13px; }
+  .electrical-lamp-state { border-block: 1px solid #e0e7e2; padding: 12px 0; }
+  .electrical-diagnostics { min-height: 80px; padding: 10px 0; }
+  .selected-component { padding-top: 12px; border-top: 1px solid #e0e7e2; }
+  .electrical-wire-summary { margin-top: 14px; padding-top: 10px; border-top: 1px solid #e0e7e2; }
+  .electrical-component-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .electrical-toolbar .toolbar-spacer { display: none; }
+  .circuit-board { min-width: 700px; }
+}
