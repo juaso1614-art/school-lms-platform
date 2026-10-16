@@ -12,6 +12,10 @@ ALLOWED_HOSTS = [
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
     if host.strip()
 ]
+CODESPACE_NAME = os.environ.get("CODESPACE_NAME", "").strip()
+CODESPACE_PREVIEW_HOST = f"3000-{CODESPACE_NAME}.app.github.dev" if CODESPACE_NAME else ""
+if CODESPACE_PREVIEW_HOST and CODESPACE_PREVIEW_HOST not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(CODESPACE_PREVIEW_HOST)
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
 if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -21,6 +25,10 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+if CODESPACE_PREVIEW_HOST:
+    codespace_preview_origin = f"https://{CODESPACE_PREVIEW_HOST}"
+    if codespace_preview_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(codespace_preview_origin)
 if DEBUG:
     CSRF_TRUSTED_ORIGINS.extend(
         origin
@@ -98,5 +106,5 @@ SECURE_HSTS_PRELOAD = os.environ.get("SECURE_HSTS_PRELOAD", "false").lower() == 
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_CONTENT_TYPE_NOSNIFF = True
-if RENDER_EXTERNAL_HOSTNAME:
+if RENDER_EXTERNAL_HOSTNAME or CODESPACE_PREVIEW_HOST:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

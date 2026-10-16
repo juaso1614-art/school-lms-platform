@@ -106,6 +106,9 @@
     let specimenMaterial = null;
     let specimenMesh = null;
     let solutionMaterial = null;
+    let agricultureSoilMaterial = null;
+    let agricultureWaterMaterial = null;
+    const agriculturePlants = [];
     const addEquipment = (name, x, z, build) => {
       const group = new THREE.Group();
       group.position.set(x, tabletop + 0.12, z);
@@ -320,6 +323,48 @@
         }
         line([[-0.35, 0.08, -0.35], [-0.7, 0.6, -0.6], [-0.35, 0.9, -0.6], [0.35, 0.9, -0.6], [0.7, 0.6, -0.6], [0.35, 0.08, -0.35]], "#6b8d80", 0.07);
       });
+    } else if (lab.scene === "agriculture") {
+      addEquipment("crop beds & drip irrigation", -0.35, 0, (group) => {
+        agricultureSoilMaterial = material("#8e6744", 0.98);
+        box(5.8, 0.46, 3.35, agricultureSoilMaterial, [0, 0.23, 0], group);
+        agricultureWaterMaterial = new THREE.MeshStandardMaterial({
+          color: "#57a9c3",
+          roughness: 0.26,
+          metalness: 0.04,
+          transparent: true,
+          opacity: 0.45,
+        });
+        for (let row = 0; row < 3; row += 1) {
+          box(5.1, 0.035, 0.045, agricultureWaterMaterial, [0, 0.47, -0.86 + row * 0.86], group);
+          for (let column = 0; column < 5; column += 1) {
+            const plant = new THREE.Group();
+            plant.position.set(-1.9 + column * 0.94, 0.46, -0.86 + row * 0.86);
+            group.add(plant);
+            const stemMaterial = material("#4d8050", 0.76);
+            const leafMaterial = material("#6f9b50", 0.72);
+            cylinder(0.035, 0.055, 0.66, stemMaterial, [0, 0.34, 0], plant);
+            const leaves = [];
+            for (let leaf = 0; leaf < 4; leaf += 1) {
+              const leafMesh = sphere(0.22, leafMaterial, [0, 0.28 + leaf * 0.11, 0], plant, 16);
+              leafMesh.scale.set(1.5, 0.24, 0.55);
+              leafMesh.rotation.z = leaf % 2 === 0 ? 0.48 : -0.48;
+              leaves.push(leafMesh);
+            }
+            agriculturePlants.push({ plant, leaves });
+          }
+        }
+        box(0.09, 0.11, 3.0, metal, [-2.58, 0.52, 0], group);
+        cylinder(0.13, 0.15, 0.48, glass, [2.9, 0.69, -1.1], group);
+        cylinder(0.12, 0.12, 0.16, material("#5ca3b9", 0.24), [2.9, 0.55, -1.1], group);
+        box(1.15, 0.1, 0.92, dark, [2.75, 0.06, 1.12], group);
+      });
+      addEquipment("soil samples & crop monitor", 4.15, 0.35, (group) => {
+        const soilColors = ["#c6a16e", "#8e6744", "#765846"];
+        for (let index = 0; index < soilColors.length; index += 1) {
+          box(0.74, 0.32, 0.68, material(soilColors[index], 0.96), [-0.7 + index * 0.75, 0.23, 0], group);
+        }
+        screen(group, "FIELD DATA", "Crop growth", 1.45, 0.9);
+      });
     } else if (lab.scene === "biology") {
       addEquipment("compound microscope", -2.15, -0.3, addMicroscope);
       addEquipment("specimen slides & cell models", 1.6, -0.3, (group) => {
@@ -468,6 +513,24 @@
         if (caption) caption.textContent = `Simulated solution · approximate pH ${ph}`;
         render();
       },
+      setAgriculture(crop, soil, irrigation) {
+        const soilColors = { sandy: "#c6a16e", loam: "#8e6744", clay: "#765846" };
+        const leafColors = { maize: "#7fae45", beans: "#477f4e", kale: "#5f9361" };
+        const retention = { sandy: 0.48, loam: 0.82, clay: 0.72 };
+        const waterDemand = { maize: 54, beans: 42, kale: 62 };
+        const retainedWater = Number(irrigation) * retention[soil];
+        const growth = THREE.MathUtils.clamp(1.18 - Math.abs(retainedWater - waterDemand[crop]) / 65, 0.42, 1.2);
+        agricultureSoilMaterial?.color.set(soilColors[soil]);
+        if (agricultureWaterMaterial) {
+          agricultureWaterMaterial.opacity = Number(irrigation) === 0 ? 0 : 0.18 + Number(irrigation) / 200;
+          agricultureWaterMaterial.visible = Number(irrigation) > 0;
+        }
+        agriculturePlants.forEach(({ plant, leaves }) => {
+          plant.scale.y = growth;
+          leaves.forEach((leaf) => leaf.material.color.set(leafColors[crop]));
+        });
+        render();
+      },
       setBinary(bits) {
         const board = equipment.find((item) => item.name === "binary logic board")?.group;
         if (!board) return;
@@ -610,10 +673,39 @@
     addObservation(`Indicator test · ${solution.name} is approximately pH ${solution.ph}; ${indicator} shows ${colorText}. Values are simulated for revision.`);
   });
 
+  const agricultureWater = document.querySelector("#agriculture-water");
+  agricultureWater?.addEventListener("input", () => {
+    const output = document.querySelector("#agriculture-water-value");
+    if (output) output.textContent = `${agricultureWater.value} mm`;
+  });
+  document.querySelector("#run-agriculture")?.addEventListener("click", () => {
+    const crop = document.querySelector("#agriculture-crop")?.value ?? "maize";
+    const soil = document.querySelector("#agriculture-soil")?.value ?? "loam";
+    const irrigation = Number(agricultureWater?.value ?? 50);
+    const retention = { sandy: 0.48, loam: 0.82, clay: 0.72 };
+    const demand = { maize: 54, beans: 42, kale: 62 };
+    const cropNames = { maize: "Maize", beans: "Beans", kale: "Kale" };
+    const soilNames = { sandy: "sandy soil", loam: "loam soil", clay: "clay soil" };
+    const retainedWater = Math.round(irrigation * retention[soil]);
+    const growth = Math.max(0, Math.round(100 - Math.abs(retainedWater - demand[crop]) * 1.5));
+    const condition = growth >= 80 ? "favourable" : growth >= 55 ? "moderate" : "water-stressed";
+    sceneController?.setAgriculture(crop, soil, irrigation);
+    const result = document.querySelector("#agriculture-result");
+    if (result) result.textContent = `${cropNames[crop]} in ${soilNames[soil]}: about ${retainedWater} mm retained; ${condition} simulated growth (${growth}%).`;
+    addObservation(`Field trial · ${cropNames[crop]} in ${soilNames[soil]} with ${irrigation} mm irrigation. Estimated water retained: ${retainedWater} mm; growth condition: ${condition}.`);
+  });
+
   import("https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js")
     .then((THREE) => {
       sceneController = initializeScene(THREE);
       if (lab.scene === "geography") sceneController.setRainfall(Number(rainfall?.value ?? 40));
+      if (lab.scene === "agriculture") {
+        sceneController.setAgriculture(
+          document.querySelector("#agriculture-crop")?.value ?? "maize",
+          document.querySelector("#agriculture-soil")?.value ?? "loam",
+          Number(agricultureWater?.value ?? 50),
+        );
+      }
       if (lab.scene === "biology") {
         sceneController.setMagnification(Number(magnification?.value ?? 100));
         sceneController.setSpecimen(specimen?.value ?? "onion");

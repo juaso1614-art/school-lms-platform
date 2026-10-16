@@ -81,7 +81,7 @@ class PortalTests(TestCase):
         response = self.client.get(reverse("practical_labs"))
 
         self.assertEqual(response.status_code, 200)
-        for subject in ("Geography", "Language", "Computer Science", "Music", "Biology", "Chemistry"):
+        for subject in ("Geography", "Language", "Computer Science", "Music", "Biology", "Chemistry", "Agriculture"):
             with self.subTest(subject=subject):
                 self.assertContains(response, subject)
         self.assertContains(response, reverse("practical_exams"))
@@ -99,6 +99,7 @@ class PortalTests(TestCase):
             ("music", 'data-note="C"'),
             ("biology", 'id="focus-specimen"'),
             ("chemistry", 'id="test-solution"'),
+            ("agriculture", 'id="run-agriculture"'),
         ):
             with self.subTest(subject=slug):
                 response = self.client.get(reverse("subject_lab", args=[slug]))
@@ -106,6 +107,9 @@ class PortalTests(TestCase):
                 self.assertContains(response, 'id="subject-scene"')
                 self.assertContains(response, expected)
                 self.assertContains(response, "Interactive 3D studio")
+                self.assertContains(response, 'class="practical-lesson-steps"')
+                if slug == "agriculture":
+                    self.assertContains(response, 'id="agriculture-result"')
 
     def test_unknown_subject_lab_returns_not_found(self):
         session = self.client.session

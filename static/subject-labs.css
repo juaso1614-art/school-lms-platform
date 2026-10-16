@@ -297,6 +297,36 @@
   font-size: 13px;
 }
 
+.practical-lesson-guide {
+  margin: 0 0 18px;
+  padding: 13px 14px;
+  border-left: 3px solid #3e8d63;
+  background: #f3f8f3;
+}
+
+.practical-lesson-guide .eyebrow {
+  display: block;
+  margin-bottom: 9px;
+  color: #286b48;
+}
+
+.practical-lesson-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 22px;
+  color: #344c5c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.practical-lesson-outcome {
+  margin: 11px 0 0;
+  color: #365b48;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .lab-control {
   display: grid;
   gap: 10px;

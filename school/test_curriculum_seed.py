@@ -1,7 +1,7 @@
 from django.core.management import call_command
 from django.test import TestCase
 
-from .models import SubjectCatalog, SubjectDocket
+from .models import GameQuestion, GameTopic, SubjectCatalog, SubjectDocket
 
 
 class CurriculumSeedTests(TestCase):
@@ -52,3 +52,18 @@ class CurriculumSeedTests(TestCase):
 
         call_command("seed_school_data")
         self.assertEqual(SubjectCatalog.objects.filter(is_active=True).count(), sum(expected_counts.values()))
+        active_subjects = SubjectCatalog.objects.filter(is_active=True)
+        self.assertEqual(GameTopic.objects.filter(is_active=True).count(), active_subjects.count())
+        self.assertEqual(GameQuestion.objects.filter(is_active=True).count(), active_subjects.count() * 6)
+        self.assertEqual(
+            GameTopic.objects.filter(is_active=True, subject__is_active=True)
+            .values("subject_id")
+            .distinct()
+            .count(),
+            active_subjects.count(),
+        )
+        for topic in GameTopic.objects.filter(is_active=True):
+            with self.subTest(topic=topic.title):
+                self.assertEqual(topic.questions.filter(is_active=True, difficulty=1).count(), 2)
+                self.assertEqual(topic.questions.filter(is_active=True, difficulty=2).count(), 2)
+                self.assertEqual(topic.questions.filter(is_active=True, difficulty=3).count(), 2)

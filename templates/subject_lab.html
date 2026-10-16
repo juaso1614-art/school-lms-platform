@@ -33,6 +33,13 @@
       <section class="lab-control-panel" aria-labelledby="activity-title">
         <span class="eyebrow">Guided practical</span><h2 id="activity-title">Your activity</h2>
         <p class="activity-instructions">{{ lab.activity }}</p>
+        <div class="practical-lesson-guide">
+          <span class="eyebrow">Practical lesson</span>
+          <ol class="practical-lesson-steps">
+            {% for step in lab.lesson_steps %}<li>{{ step }}</li>{% endfor %}
+          </ol>
+          <p class="practical-lesson-outcome"><strong>Learning outcome:</strong> {{ lab.learning_outcome }}</p>
+        </div>
         {% if lab.slug == "geography" %}
         <div class="lab-control"><label for="rainfall">Simulated rainfall <output id="rainfall-value">40 mm</output></label><input id="rainfall" type="range" min="0" max="100" value="40"><button class="lab-action" id="run-geography" type="button">Run terrain study</button></div>
         {% elif lab.slug == "languages" %}
@@ -45,6 +52,14 @@
         <div class="lab-control"><label for="specimen">Prepared specimen</label><select id="specimen"><option value="onion">Onion epidermis · plant cells</option><option value="cheek">Cheek smear · animal cells</option><option value="leaf">Leaf section · stomata</option></select><label for="magnification">Magnification <output id="magnification-value">100×</output></label><input id="magnification" type="range" min="40" max="400" step="20" value="100"><button class="lab-action" id="focus-specimen" type="button">Focus microscope</button></div>
         {% elif lab.slug == "chemistry" %}
         <div class="lab-control"><label for="solution">Simulated solution</label><select id="solution"><option value="lemon">Citrus solution</option><option value="vinegar">Vinegar solution</option><option value="water" selected>Distilled water</option><option value="bicarbonate">Bicarbonate solution</option><option value="soap">Soap solution</option></select><label for="indicator">Indicator</label><select id="indicator"><option value="universal">Universal indicator</option><option value="litmus">Litmus</option><option value="phenolphthalein">Phenolphthalein</option></select><button class="lab-action" id="test-solution" type="button">Add indicator</button></div>
+        {% elif lab.slug == "agriculture" %}
+        <div class="lab-control">
+          <label for="agriculture-crop">Crop</label><select id="agriculture-crop"><option value="maize">Maize</option><option value="beans">Beans</option><option value="kale">Kale</option></select>
+          <label for="agriculture-soil">Soil texture</label><select id="agriculture-soil"><option value="sandy">Sandy soil</option><option value="loam" selected>Loam soil</option><option value="clay">Clay soil</option></select>
+          <label for="agriculture-water">Irrigation per week <output id="agriculture-water-value">50 mm</output></label><input id="agriculture-water" type="range" min="0" max="100" step="5" value="50">
+          <button class="lab-action" id="run-agriculture" type="button">Run field trial</button>
+          <output class="lab-result-display" id="agriculture-result" aria-live="polite">Choose conditions and run a trial to compare crop growth.</output>
+        </div>
         {% endif %}
         <p class="lab-feedback" id="lab-feedback" role="status" aria-live="polite">Start the activity to record an observation.</p>
       </section>
