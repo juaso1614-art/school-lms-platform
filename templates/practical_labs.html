@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Practical Labs | Peak Group of Schools{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="/static/subject-labs.css" />{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'subject-labs.css' %}" />{% endblock %}
 {% block content %}
 <section class="subject-labs-page page-section">
   <div class="container">
