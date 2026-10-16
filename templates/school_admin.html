@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}School Administration | Peak Group of Schools{% endblock %}
+{% block content %}
+<section class="page-section school-admin-page"><div class="container">
+  <div class="section-heading left"><span class="eyebrow">School leadership and staff</span><h2>School administration</h2><p>Manage the people and reporting structure across the school.</p></div>
+  <div class="school-admin-summary"><span>{{ total_staff_profiles }}</span><div><strong>Staff profiles</strong><small>Across all roles</small></div></div>
+  <section class="panel school-meet-status" aria-labelledby="meet-status-heading">
+    <div><h3 id="meet-status-heading">Google Meet</h3>
+      {% if google_meet_configured %}
+        <p>Google Meet credentials detected. Automatic meeting creation is available.</p>
+      {% else %}
+        <p>Automatic meeting creation needs Google Workspace credentials. Configure <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> and <code>GOOGLE_MEET_DELEGATE_EMAIL</code> in the app environment.</p>
+        <p>You can still schedule a class by pasting an existing Google Meet link.</p>
+      {% endif %}
+    </div>
+    <a class="btn btn-primary" href="{% url 'classes' %}">Open classes</a>
+  </section>
+  <div class="school-admin-layout">
+    <section class="panel school-admin-form-panel" aria-labelledby="add-staff-heading">
+      <h3 id="add-staff-heading">Add staff profile</h3>
+      <form method="post" class="school-admin-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          <label for="{{ field.id_for_label }}">{{ field.label }}{{ field }}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Add staff member</button>
+      </form>
+    </section>
+    <div class="school-org-chart" aria-label="School organization structure">
+      {% for group in role_groups %}
+        <section class="school-org-level" aria-labelledby="role-{{ group.value }}">
+          <header><h3 id="role-{{ group.value }}">{{ group.label }}</h3><span>{{ group.staff|length }}</span></header>
+          {% for staff in group.staff %}
+            <article class="school-org-person">
+              <strong>{{ staff.full_name }}</strong>
+              <span>{{ staff.department|default:"School-wide" }}{% if staff.campus %} · {{ staff.campus }}{% endif %}</span>
+              <a href="mailto:{{ staff.email }}">{{ staff.email }}</a>
+            </article>
+          {% empty %}
+            <p class="school-org-empty">No {{ group.label|lower }} profiles added.</p>
+          {% endfor %}
+        </section>
+      {% endfor %}
+    </div>
+  </div>
+</div></section>
+{% endblock %}

@@ -28,23 +28,35 @@
       {% endif %}
     </div>
 
-    <div class="practical-layout">
-      <section class="lab-bench panel" aria-labelledby="apparatus-heading">
-        <div class="lab-bench-heading">
-          <div><span class="eyebrow">Virtual workbench</span><h3 id="apparatus-heading">Circuit and measuring instruments</h3></div>
-          <span class="lab-live"><span></span> Circuit live</span>
-        </div>
-        <canvas class="circuit-canvas" id="circuit-canvas" width="1000" height="560" role="img" aria-label="Isometric virtual circuit with a battery, rheostat, 10 ohm resistor, ammeter, and voltmeter. Meter readings change when the rheostat is adjusted.">
-          Your browser does not support the canvas used to draw the virtual circuit.
+    <section class="lab-bench" aria-labelledby="apparatus-heading">
+      <div class="lab-bench-heading">
+        <div><span class="eyebrow">Interactive 3D workbench</span><h3 id="apparatus-heading">Circuit and measuring instruments</h3></div>
+        <div class="lab-scene-actions"><span class="lab-live"><span></span> Circuit live</span><button class="btn btn-light" type="button" id="reset-lab-view" title="Reset 3D view">Reset view</button></div>
+      </div>
+      <div class="lab-scene-frame">
+        <canvas class="lab-scene-canvas" id="lab-scene-canvas" tabindex="0" role="img" aria-label="Interactive 3D physics workbench showing a DC power supply, rheostat, 10 ohm resistor, ammeter, voltmeter, and connected leads. Focus and use arrow keys to rotate the view; plus and minus zoom. Meter readings update as rheostat resistance changes.">
+          Interactive 3D physics workbench showing circuit apparatus.
         </canvas>
-        <div class="meter-readings" aria-label="Live circuit readings">
-          <div><span>Voltmeter</span><strong><output id="voltage-reading">3.00</output> V</strong></div>
-          <div><span>Ammeter</span><strong><output id="current-reading">0.30</output> A</strong></div>
-          <div><span>Rheostat</span><strong><output id="resistance-reading">0</output> Ω</strong></div>
-        </div>
-        <p class="apparatus-caption">The voltmeter is connected across the 10 Ω test resistor; the ammeter measures the series current.</p>
-      </section>
+        <canvas class="visually-hidden" id="circuit-canvas" width="1000" height="560" aria-hidden="true"></canvas>
+        <p class="lab-scene-status" id="lab-scene-status" role="status" aria-live="polite">Loading 3D apparatus...</p>
+      </div>
+      <div class="lab-equipment-list" aria-label="Apparatus in this circuit">
+        <span><i class="equipment-dot power"></i>DC power supply</span>
+        <span><i class="equipment-dot rheostat"></i>Rheostat</span>
+        <span><i class="equipment-dot resistor"></i>10 Ω test resistor</span>
+        <span><i class="equipment-dot meter"></i>Digital ammeter</span>
+        <span><i class="equipment-dot meter"></i>Digital voltmeter</span>
+        <span><i class="equipment-dot lead"></i>Connecting leads</span>
+      </div>
+      <div class="meter-readings" aria-label="Live circuit readings">
+        <div><span>Voltmeter</span><strong><output id="voltage-reading">3.00</output> V</strong></div>
+        <div><span>Ammeter</span><strong><output id="current-reading">0.30</output> A</strong></div>
+        <div><span>Rheostat</span><strong><output id="resistance-reading">0</output> Ω</strong></div>
+      </div>
+      <p class="apparatus-caption">The voltmeter is connected across the 10 Ω test resistor; the ammeter measures the series current.</p>
+    </section>
 
+    <div class="practical-layout">
       <aside class="practical-side">
         <section class="panel practical-task">
           <span class="eyebrow">Task</span>
@@ -95,4 +107,5 @@
   </div>
 </section>
 <script src="/static/practical-lab.js" defer></script>
+<script type="module" src="/static/practical-lab-3d.js"></script>
 {% endblock %}

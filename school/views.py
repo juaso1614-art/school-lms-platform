@@ -15,7 +15,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_http_methods, require_POST
 
 from . import google_meet, mpesa, paypal, stripe_card, whatsapp
-from .forms import CreateAccountForm
+from .forms import CreateAccountForm, SchoolStaffProfileForm
 from .models import (
     Exam,
     Invoice,
@@ -48,18 +48,19 @@ def index(request):
 
 @require_http_methods(["GET", "POST"])
 def login_view(request):
-    login_role = request.GET.get("role", "").strip().lower()
+    admin_login = request.path.rstrip("/").endswith("admin-login")
+    login_role = "admin" if admin_login else request.GET.get("role", "").strip().lower()
     if request.path.rstrip("/").endswith("login/teacher"):
         login_role = "teacher"
     if request.method == "POST":
         email = request.POST.get("email", "").strip()
         password = request.POST.get("password", "")
         user = User.objects.filter(email__iexact=email, is_active=True).first()
-        if user and user.check_password(password):
+        if user and user.check_password(password) and (not admin_login or user.role == "admin"):
             request.session.cycle_key()
             request.session["user_id"] = user.pk
             request.session["role"] = user.role
-            return redirect("dashboard")
+            return redirect("school_admin" if admin_login else "dashboard")
         messages.error(request, "Invalid email or password.")
         return render(request, "login.html", {"login_role": login_role})
     return render(request, "login.html", {"login_role": login_role})
@@ -116,6 +117,40 @@ def dashboard(request):
         "total_invoices": Invoice.objects.count(),
     }
     return render(request, "dashboard.html", context)
+
+
+@require_http_methods(["GET", "POST"])
+def school_admin(request):
+    user = _current_user(request)
+    if not user:
+        return redirect("login")
+    if user.role != "admin":
+        return redirect("dashboard")
+
+    form = SchoolStaffProfileForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "School staff profile added.")
+        return redirect("school_admin")
+
+    role_groups = [
+        {
+            "value": role,
+            "label": label,
+            "staff": SchoolStaffProfile.objects.filter(role=role),
+        }
+        for role, label in SchoolStaffProfile.ROLE_CHOICES
+    ]
+    return render(
+        request,
+        "school_admin.html",
+        {
+            "form": form,
+            "role_groups": role_groups,
+            "total_staff_profiles": SchoolStaffProfile.objects.count(),
+            "google_meet_configured": google_meet.is_configured(),
+        },
+    )
 
 
 @require_http_methods(["GET", "POST"])

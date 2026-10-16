@@ -62,7 +62,9 @@ class PortalTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Investigating a resistor")
-        self.assertContains(response, "circuit-canvas")
+        self.assertContains(response, 'id="lab-scene-canvas"')
+        self.assertContains(response, "Digital ammeter")
+        self.assertContains(response, "Digital voltmeter")
         self.assertContains(response, "Record six pairs of readings")
         self.assertContains(response, "Direct WhatsApp group messaging is not configured.")
 
@@ -232,6 +234,35 @@ class PortalTests(TestCase):
         self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)
         self.client.get(reverse("logout"))
         self.assertRedirects(self.client.get(reverse("dashboard")), reverse("login"))
+
+    def test_admin_login_only_accepts_admin_accounts(self):
+        response = self.client.get(reverse("admin_login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Administrator login")
+
+        response = self.client.post(
+            reverse("admin_login"),
+            {"email": "student@example.com", "password": "student-pass"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Invalid email or password.")
+        self.assertNotIn("user_id", self.client.session)
+
+        admin = User.objects.create(
+            email="admin@example.com",
+            first_name="Miriam",
+            last_name="Wanjiku",
+            role="admin",
+        )
+        admin.set_password("admin-pass")
+        admin.save()
+
+        response = self.client.post(
+            reverse("admin_login"),
+            {"email": "admin@example.com", "password": "admin-pass"},
+        )
+        self.assertRedirects(response, reverse("school_admin"))
+        self.assertEqual(self.client.session["user_id"], admin.pk)
 
     def test_invalid_login_shows_error_without_unauthorized_response(self):
         response = self.client.post(
@@ -431,6 +462,45 @@ class PortalTests(TestCase):
         self.assertEqual(profile.role, "principal")
         self.assertEqual(profile.campus, "Main Campus")
         self.assertContains(self.client.get(reverse("staff_room")), "Grace Njeri")
+
+    def test_school_admin_is_admin_only_and_manages_staff_structure(self):
+        self.assertRedirects(self.client.get(reverse("school_admin")), reverse("login"))
+
+        session = self.client.session
+        session["user_id"] = self.user.pk
+        session.save()
+        self.assertRedirects(self.client.get(reverse("school_admin")), reverse("dashboard"))
+
+        admin = User.objects.create(
+            email="admin@example.com",
+            first_name="Miriam",
+            last_name="Wanjiku",
+            role="admin",
+        )
+        session = self.client.session
+        session["user_id"] = admin.pk
+        session.save()
+
+        response = self.client.get(reverse("school_admin"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "School administration")
+        self.assertContains(response, "Principal")
+
+        response = self.client.post(
+            reverse("school_admin"),
+            {
+                "role": "principal",
+                "full_name": "Grace Njeri",
+                "email": "grace.njeri@peakschools.ac.ke",
+                "phone": "+254712345678",
+                "department": "School Leadership",
+                "campus": "Main Campus",
+                "staff_id": "PS-201",
+            },
+        )
+
+        self.assertRedirects(response, reverse("school_admin"))
+        self.assertContains(self.client.get(reverse("school_admin")), "Grace Njeri")
 
     def test_teacher_can_schedule_one_hour_google_meet_lesson(self):
         response = self.client.post(

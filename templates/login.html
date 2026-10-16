@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}Login | Peak Group of Schools{% endblock %}
+{% block title %}{% if login_role == 'admin' %}Administrator Login{% else %}Login{% endif %} | Peak Group of Schools{% endblock %}
 {% block content %}
 <section class="auth-section"><div class="container auth-wrap"><div class="auth-card">
-  <span class="eyebrow">Welcome back</span><h2>{% if login_role == 'teacher' %}Teacher portal login{% else %}Peak Group of Schools portal login{% endif %}</h2>
-  <form method="post" action="/login">
+  <span class="eyebrow">{% if login_role == 'admin' %}School administration{% else %}Welcome back{% endif %}</span><h2>{% if login_role == 'admin' %}Administrator login{% elif login_role == 'teacher' %}Teacher portal login{% else %}Peak Group of Schools portal login{% endif %}</h2>
+  <form method="post" action="{% if login_role == 'admin' %}{% url 'admin_login' %}{% else %}{% url 'login' %}{% endif %}">
     {% csrf_token %}
     <label>Email<input type="email" name="email" placeholder="name@school.com" required /></label>
     <label>Password<input type="password" name="password" placeholder="Enter password" required /></label>
     <button type="submit" class="btn btn-primary full">Login</button>
   </form>
-  <p class="auth-switch">New to Peak Group of Schools? <a href="{% url 'create_account' %}">Create a student account</a></p>
-  <div class="demo-box"><p>Demo accounts:</p><ul><li>Admin: admin@school.com / admin123</li><li>Teacher: teacher@school.com / teacher123</li><li>Student: student@school.com / student123</li><li>Parent: parent@school.com / parent123</li></ul></div>
+  {% if login_role != 'admin' %}<p class="auth-switch">New to Peak Group of Schools? <a href="{% url 'create_account' %}">Create a student account</a></p>{% endif %}
+  {% if login_role != 'admin' %}<div class="demo-box"><p>Demo accounts:</p><ul><li>Admin: admin@school.com / admin123</li><li>Teacher: teacher@school.com / teacher123</li><li>Student: student@school.com / student123</li><li>Parent: parent@school.com / parent123</li></ul></div>{% endif %}
 </div></div></section>
 {% endblock %}

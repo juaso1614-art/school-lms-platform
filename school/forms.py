@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import User
+from .models import SchoolStaffProfile, User
 
 
 class CreateAccountForm(forms.Form):
@@ -31,3 +31,17 @@ class CreateAccountForm(forms.Form):
         if password and confirm_password and password != confirm_password:
             self.add_error("confirm_password", "Passwords do not match.")
         return cleaned_data
+
+
+class SchoolStaffProfileForm(forms.ModelForm):
+    class Meta:
+        model = SchoolStaffProfile
+        fields = (
+            "role",
+            "full_name",
+            "email",
+            "phone",
+            "department",
+            "campus",
+            "staff_id",
+        )

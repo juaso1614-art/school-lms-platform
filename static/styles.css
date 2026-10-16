@@ -650,6 +650,130 @@ textarea:focus {
   padding-block: 4px 13px;
 }
 
+.school-admin-page .section-heading {
+  margin-bottom: 20px;
+}
+
+.school-admin-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: fit-content;
+  margin-bottom: 24px;
+  padding: 12px 18px;
+  border-left: 4px solid var(--green);
+  background: #edf7f0;
+}
+
+.school-admin-summary > span {
+  color: var(--navy);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.school-admin-summary strong,
+.school-admin-summary small {
+  display: block;
+}
+
+.school-admin-summary small {
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+.school-admin-layout {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.75fr) minmax(0, 1.5fr);
+  align-items: start;
+  gap: 28px;
+}
+
+.school-admin-form-panel {
+  padding: 22px;
+  border-top: 4px solid var(--blue);
+}
+
+.school-admin-form {
+  display: grid;
+  gap: 12px;
+}
+
+.school-admin-form button {
+  margin-top: 4px;
+}
+
+.field-error {
+  display: block;
+  margin-top: 4px;
+  color: #a32121;
+  font-size: 13px;
+}
+
+.school-org-chart {
+  display: grid;
+  gap: 12px;
+}
+
+.school-org-level {
+  padding: 16px 18px;
+  border-left: 3px solid var(--green);
+  background: #f5f8f5;
+}
+
+.school-org-level:nth-child(2) { margin-left: 16px; }
+.school-org-level:nth-child(3) { margin-left: 32px; }
+.school-org-level:nth-child(4) { margin-left: 48px; }
+.school-org-level:nth-child(5) { margin-left: 64px; }
+
+.school-org-level header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.school-org-level h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.school-org-level header > span {
+  min-width: 28px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #dcebe0;
+  color: #164f31;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.school-org-person {
+  display: grid;
+  gap: 3px;
+  padding: 10px 0;
+  border-top: 1px solid #dce5df;
+  overflow-wrap: anywhere;
+}
+
+.school-org-person span,
+.school-org-person a,
+.school-org-empty {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.school-org-person a {
+  width: fit-content;
+  color: var(--blue);
+}
+
+.school-org-empty {
+  margin: 0;
+}
+
 .staff-shortcuts {
   display: flex;
   flex-wrap: wrap;
@@ -1104,13 +1228,9 @@ textarea:focus {
 }
 
 .practical-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(290px, 0.8fr);
-  align-items: start;
-  gap: 20px;
+  margin-top: 24px;
 }
 
-.lab-bench,
 .practical-task,
 .rheostat-control,
 .results-panel {
@@ -1119,7 +1239,8 @@ textarea:focus {
 
 .lab-bench {
   min-width: 0;
-  overflow: hidden;
+  margin-bottom: 26px;
+  padding: 0;
 }
 
 .lab-bench-heading,
@@ -1159,14 +1280,80 @@ textarea:focus {
   box-shadow: 0 0 0 4px rgb(34 197 94 / 12%);
 }
 
-.circuit-canvas {
+.lab-scene-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lab-scene-actions .btn {
+  min-height: 38px;
+  padding: 7px 12px;
+}
+
+.lab-scene-frame {
+  position: relative;
+  margin-top: 14px;
+  overflow: hidden;
+  background: #dcebe5;
+}
+
+.lab-scene-canvas {
   display: block;
   width: 100%;
-  height: auto;
-  margin-top: 18px;
-  border: 1px solid #dce6e9;
-  border-radius: 7px;
+  height: clamp(320px, 43vw, 540px);
+  cursor: grab;
+  touch-action: none;
 }
+
+.lab-scene-canvas.is-dragging {
+  cursor: grabbing;
+}
+
+.lab-scene-status {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  max-width: calc(100% - 28px);
+  margin: 0;
+  padding: 7px 10px;
+  color: #244a3d;
+  background: rgb(250 253 251 / 92%);
+  border-left: 3px solid #23845b;
+  font-size: 12px;
+}
+
+.lab-scene-status[hidden] {
+  display: none;
+}
+
+.lab-equipment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11px 20px;
+  margin-top: 14px;
+  color: #40576a;
+  font-size: 12px;
+}
+
+.lab-equipment-list > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.equipment-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #66796e;
+}
+
+.equipment-dot.power { background: #e0a04d; }
+.equipment-dot.rheostat { background: #b8773e; }
+.equipment-dot.resistor { background: #a66848; }
+.equipment-dot.meter { background: #27855d; }
+.equipment-dot.lead { background: #c84a42; }
 
 .meter-readings {
   display: grid;
@@ -1200,8 +1387,39 @@ textarea:focus {
   font-size: 12px;
 }
 
+@media (max-width: 900px) {
+  .lab-scene-canvas {
+    height: clamp(320px, 48vw, 450px);
+  }
+
+  .practical-side {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .lab-bench-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lab-scene-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lab-scene-canvas {
+    height: 360px;
+  }
+
+  .lab-equipment-list {
+    gap: 10px 14px;
+  }
+}
+
 .practical-side {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -1386,6 +1604,10 @@ textarea:focus {
     grid-template-columns: 190px minmax(0, 1fr);
   }
 
+  .school-admin-layout {
+    grid-template-columns: 1fr;
+  }
+
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1473,6 +1695,10 @@ textarea:focus {
 
   .dashboard-shell {
     grid-template-columns: 1fr;
+  }
+
+  .school-org-level:nth-child(n) {
+    margin-left: 0;
   }
 
   .sidebar {
