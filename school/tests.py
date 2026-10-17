@@ -8,13 +8,13 @@ from unittest.mock import patch
 from datetime import datetime
 from django.utils import timezone
 
-from . import whatsapp
-from . import jitsi
+from . import jitsi, knec, whatsapp
 from .models import (
     Exam,
     GameProgress,
     GameQuestion,
     GameTopic,
+    KnecSubmission,
     Invoice,
     LoginHistory,
     Payment,
@@ -860,3 +860,111 @@ class PortalTests(TestCase):
         )
         self.assertRedirects(response, reverse("exams"))
         self.assertEqual(Exam.objects.count(), 1)
+
+class KnecPackerTests(TestCase):
+    """End-to-end .knec archive validation and submission."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User(
+            email="candidate@example.com",
+            first_name="Brian",
+            last_name="Ochieng",
+            role="student",
+        )
+        cls.user.set_password("candidate-pass")
+        cls.user.save()
+
+    def _build_knec(self, index="40521234001", code="232", tamper=False):
+        import hashlib
+        import hmac
+        import json as jsonlib
+        import zipfile
+
+        subject = knec.SUBJECTS[code]
+        payload = {
+            "data/readings.csv": "No.,Rheostat (Ω),V (V),I (A),V / I (Ω)\r\n1,5,3.00,0.30,10.00\r\n",
+            "data/lab_state.json": jsonlib.dumps({"workbench": "physics-resistor-circuit"}),
+            "data/report.pdf": b"%PDF-1.4 candidate report",
+        }
+        inventory = [
+            {
+                "name": name,
+                "size": len(data if isinstance(data, bytes) else data.encode()),
+                "sha256": hashlib.sha256(data if isinstance(data, bytes) else data.encode()).hexdigest(),
+            }
+            for name, data in payload.items()
+        ]
+        manifest = {
+            "format": "KNEC-PRACTICAL-ARCHIVE",
+            "version": 1,
+            "generatedAt": "2026-10-17T10:00:00+00:00",
+            "candidate": {"index_number": index, "submitted_at": "2026-10-17T10:00:00+00:00", "user_agent": "test"},
+            "subject": {"code": code, "name": subject["name"], "paper": subject["paper"]},
+            "payload": inventory,
+            "media_expected": ["media/setup_photo.jpg", "media/process_proof.webm"],
+            "integrity": {"algorithm": "SHA-256", "signature": "HMAC-SHA256 over manifest.json"},
+        }
+        manifest_bytes = jsonlib.dumps(manifest).encode()
+        # Anonymous submissions are rejected before validation, so a fallback key is fine there.
+        session_key = self.client.session.get("knec_hmac_key", "0" * 64)
+        signature = hmac.new(session_key.encode(), manifest_bytes, hashlib.sha256).hexdigest()
+        if tamper:
+            signature = "0" * 64
+        buffer = BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            for name, data in payload.items():
+                archive.writestr(name, data)
+            archive.writestr("manifest.json", manifest_bytes)
+            archive.writestr("signature.sig", signature)
+        return f"{index}_{code}.knec", buffer.getvalue()
+
+    def _login_and_get_session_key(self):
+        self.client.post(reverse("login"), {"email": "candidate@example.com", "password": "candidate-pass"})
+        self.client.get(reverse("practical_exams"))
+        return self.client.session["knec_hmac_key"]
+
+    def test_valid_knec_submission_is_verified_and_stored(self):
+        self._login_and_get_session_key()
+        filename, archive_bytes = self._build_knec()
+        response = self.client.post(
+            reverse("knec_submit"),
+            {"archive": SimpleUploadedFile(filename, archive_bytes, content_type="application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+        submission = KnecSubmission.objects.get(pk=response.json()["submission_id"])
+        self.assertEqual(submission.index_number, "40521234001")
+        self.assertEqual(submission.subject_code, "232")
+        self.assertEqual(submission.paper, "3")
+        self.assertEqual(submission.archive.read(), archive_bytes)
+
+    def test_tampered_signature_is_rejected(self):
+        self._login_and_get_session_key()
+        filename, archive_bytes = self._build_knec(tamper=True)
+        response = self.client.post(
+            reverse("knec_submit"),
+            {"archive": SimpleUploadedFile(filename, archive_bytes, content_type="application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Signature verification failed", " ".join(response.json()["errors"]))
+        self.assertFalse(KnecSubmission.objects.exists())
+
+    def test_wrong_filename_and_missing_entries_are_rejected(self):
+        self._login_and_get_session_key()
+        filename, archive_bytes = self._build_knec()
+        response = self.client.post(
+            reverse("knec_submit"),
+            {"archive": SimpleUploadedFile("bad-name.zip", archive_bytes, content_type="application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(KnecSubmission.objects.exists())
+
+    def test_anonymous_submission_is_rejected(self):
+        filename, archive_bytes = self._build_knec()
+        response = self.client.post(
+            reverse("knec_submit"),
+            {"archive": SimpleUploadedFile(filename, archive_bytes, content_type="application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(KnecSubmission.objects.exists())

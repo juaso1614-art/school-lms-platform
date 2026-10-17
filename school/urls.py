@@ -27,6 +27,7 @@ urlpatterns = [
     path("library", views.library, name="library"),
     path("exams", views.exams_page, name="exams"),
     path("practical-exams", views.practical_lab, name="practical_exams"),
+    path("knec/submit", views.knec_submit, name="knec_submit"),
     path(
         "practical-exams/send-whatsapp-invite",
         views.send_practical_whatsapp_invite,

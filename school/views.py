@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -8,19 +9,20 @@ from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
 from django.core.files.storage import default_storage
 from django.db import connection
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_http_methods, require_POST
 
-from . import jitsi, mpesa, paypal, stripe_card, whatsapp
+from . import jitsi, knec, mpesa, paypal, stripe_card, whatsapp
 from .forms import CreateAccountForm, GameQuestionForm, GameTopicForm, SchoolStaffProfileForm
 from .models import (
     Exam,
     GameProgress,
     GameQuestion,
+    KnecSubmission,
     GameTopic,
     Invoice,
     LoginHistory,
@@ -968,6 +970,44 @@ def exams_page(request):
     )
 
 
+def _knec_session_key(request):
+    """Per-session HMAC key the .knec packer signs manifests with."""
+    key = request.session.get("knec_hmac_key")
+    if not key:
+        key = secrets.token_hex(32)
+        request.session["knec_hmac_key"] = key
+    return key
+
+
+@require_http_methods(["POST"])
+def knec_submit(request):
+    """Receive a packed .knec archive, validate it and store valid ones."""
+    user = _current_user(request)
+    if not user:
+        return JsonResponse({"ok": False, "errors": ["Please log in before submitting."]}, status=401)
+    if user.role not in ("student", "teacher", "admin"):
+        return JsonResponse({"ok": False, "errors": ["Your account cannot submit practical archives."]}, status=403)
+    upload = request.FILES.get("archive")
+    if not upload:
+        return JsonResponse({"ok": False, "errors": ["Attach the packed .knec archive."]}, status=400)
+    manifest, errors = knec.validate_archive(
+        upload.read(), upload.name, _knec_session_key(request)
+    )
+    if errors:
+        return JsonResponse({"ok": False, "errors": errors}, status=400)
+    submission = KnecSubmission.objects.create(
+        subject_code=manifest["subject"]["code"],
+        index_number=str(manifest["candidate"]["index_number"]),
+        paper=manifest["subject"]["paper"],
+        archive=upload,
+        manifest=manifest,
+        uploaded_by=f"{user.first_name} {user.last_name}".strip() or user.email,
+    )
+    return JsonResponse(
+        {"ok": True, "submission_id": submission.pk, "manifest": manifest, "filename": upload.name}
+    )
+
+
 def practical_lab(request):
     user = _current_user(request)
     if not user:
@@ -984,7 +1024,12 @@ def practical_lab(request):
     return render(
         request,
         "practical_lab.html",
-        {"user": user, "whatsapp_configured": whatsapp.is_configured(), "practicals": practicals},
+        {
+            "user": user,
+            "whatsapp_configured": whatsapp.is_configured(),
+            "practicals": practicals,
+            "knec_hmac_key": _knec_session_key(request),
+        },
     )
 
 

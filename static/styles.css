@@ -2586,3 +2586,16 @@ canvas#subject-scene.is-inspecting { outline: 2px solid rgb(34 197 94 / 55%); ou
 .lab-scene-tip { margin-top: 12px; font-size: 13px; color: var(--muted); }
 .assembly-part.is-wrong { animation: game-shake 0.45s ease; border-color: #c2410c; background: #fde4d4; }
 .assembly-dropzone[hidden] { display: none; }
+
+/* KNEC .knec packer panel (practical-exams) */
+.knec-intro { margin: 4px 0 14px; font-size: 14px; color: var(--muted); }
+.knec-intro code { background: #eef4ee; padding: 1px 6px; border-radius: 6px; font-size: 13px; }
+.knec-form { display: grid; gap: 14px; }
+.knec-controls { flex-wrap: wrap; }
+.knec-field { display: grid; gap: 4px; font-size: 13px; font-weight: 600; min-width: 170px; flex: 1 1 200px; }
+.knec-field input,
+.knec-field select { font-weight: 400; }
+.knec-actions { flex-wrap: wrap; }
+.knec-status { font-size: 14px; margin: 0; }
+.knec-status.error { color: #b91c1c; font-weight: 600; }
+#knec-detail { margin: 0; }

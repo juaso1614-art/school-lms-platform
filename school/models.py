@@ -317,6 +317,22 @@ class Exam(models.Model):
         return self.title
 
 
+class KnecSubmission(models.Model):
+    subject_code = models.CharField(max_length=3)
+    index_number = models.CharField(max_length=12)
+    paper = models.CharField(max_length=2)
+    archive = models.FileField(upload_to="knec/")
+    manifest = models.JSONField()
+    uploaded_by = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.index_number}_{self.subject_code}.knec"
+
+
 class PracticalAttendance(models.Model):
     STATUS_CHOICES = [
         ("present", "Present"),
