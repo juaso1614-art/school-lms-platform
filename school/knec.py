@@ -70,16 +70,16 @@ def _sha256_hex(data: bytes) -> str:
 
 def _signature(manifest_bytes: bytes, hmac_key_hex: str) -> str:
     return hmac.new(
-        hmac_key_hex.encode("utf-8"), manifest_bytes, hashlib.sha256
+        bytes.fromhex(hmac_key_hex), manifest_bytes, hashlib.sha256
     ).hexdigest()
 
 
-def validate_archive(archive_bytes: bytes, filename: str):
+def validate_archive(archive_bytes: bytes, filename: str, hmac_key_hex: str):
     """Validate a ``.knec`` archive.
 
     Returns ``(manifest_or_none, errors)``; ``manifest`` is only set when
-    every check passed. The signature is verified against the server
-    signing key the browser packer signed the manifest with.
+    every check passed. The signature is verified against ``hmac_key_hex``,
+    the per-session HMAC key the browser packer signed the manifest with.
     """
     errors = []
     manifest = None
