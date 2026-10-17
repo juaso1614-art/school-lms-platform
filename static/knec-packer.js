@@ -65,7 +65,7 @@
     };
     await digest("data/readings.csv", text.encode(readingsCsv));
     await digest("data/lab_state.json", text.encode(labStateJson));
-    if (report?.file) await digest("data/report.pdf", report.bytes);
+    if (report?.bytes) await digest("data/report.pdf", report.bytes);
     for (const item of media) await digest(`media/${item.name}`, item.bytes);
 
     const manifest = {

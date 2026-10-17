@@ -908,7 +908,7 @@ class KnecPackerTests(TestCase):
         manifest_bytes = jsonlib.dumps(manifest).encode()
         # Anonymous submissions are rejected before validation, so a fallback key is fine there.
         session_key = self.client.session.get("knec_hmac_key", "0" * 64)
-        signature = hmac.new(session_key.encode(), manifest_bytes, hashlib.sha256).hexdigest()
+        signature = hmac.new(bytes.fromhex(session_key), manifest_bytes, hashlib.sha256).hexdigest()
         if tamper:
             signature = "0" * 64
         buffer = BytesIO()
