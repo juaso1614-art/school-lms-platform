@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -8,19 +9,20 @@ from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
 from django.core.files.storage import default_storage
 from django.db import connection
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_http_methods, require_POST
 
-from . import google_meet, mpesa, paypal, stripe_card, whatsapp
+from . import jitsi, knec, mpesa, paypal, stripe_card, whatsapp
 from .forms import CreateAccountForm, GameQuestionForm, GameTopicForm, SchoolStaffProfileForm
 from .models import (
     Exam,
     GameProgress,
     GameQuestion,
+    KnecSubmission,
     GameTopic,
     Invoice,
     LoginHistory,
@@ -172,6 +174,7 @@ def games_corner(request):
                 level_one_questions=Count("questions", filter=Q(questions__is_active=True, questions__difficulty=1)),
                 level_two_questions=Count("questions", filter=Q(questions__is_active=True, questions__difficulty=2)),
                 level_three_questions=Count("questions", filter=Q(questions__is_active=True, questions__difficulty=3)),
+                total_questions=Count("questions", filter=Q(questions__is_active=True)),
             )
             .order_by("title")
         )
@@ -242,6 +245,9 @@ def games_author(request):
     )
 
 
+ACTIVITY_MODES = ("flashcards", "matching")
+
+
 @require_http_methods(["GET", "POST"])
 def game_play(request, topic_id):
     user = _current_user(request)
@@ -252,6 +258,12 @@ def game_play(request, topic_id):
 
     topic = get_object_or_404(GameTopic, pk=topic_id, is_active=True, subject__is_active=True)
     progress, _ = GameProgress.objects.get_or_create(user=user, topic=topic)
+    topic.total_questions = topic.questions.filter(is_active=True).count()
+
+    mode = request.GET.get("mode", "") or request.POST.get("mode", "")
+    if mode in ACTIVITY_MODES:
+        return _game_activity(request, topic, progress, mode)
+
     questions = list(
         topic.questions.filter(is_active=True, difficulty=progress.current_level).order_by("order", "id")
     )
@@ -314,6 +326,7 @@ def game_play(request, topic_id):
                         feedback_type = "success"
                     progress.save()
                 else:
+                    messages.success(request, f"Correct! +{progress.current_level * 10} points.")
                     return redirect("game_play", topic_id=topic.pk)
                 if feedback_type == "success":
                     messages.success(request, feedback)
@@ -333,6 +346,51 @@ def game_play(request, topic_id):
             "feedback_type": feedback_type,
             "selected_choice": selected_choice,
             "choice_labels": ("A", "B", "C", "D"),
+        },
+    )
+
+
+def _game_activity(request, topic, progress, mode):
+    """Flashcard and matching game modes built from the topic's questions."""
+    if request.method == "POST" and request.POST.get("action") == "activity-complete":
+        try:
+            earned = int(request.POST.get("score", "0"))
+            spent = int(request.POST.get("attempts", "1"))
+        except ValueError:
+            earned, spent = 0, 1
+        question_count = topic.questions.filter(is_active=True).count()
+        progress.score += max(0, min(earned, question_count * 10))
+        progress.attempts += max(1, min(spent, 500))
+        progress.save(update_fields=("score", "attempts", "updated_at"))
+        label = "Flashcard deck" if mode == "flashcards" else "Matching game"
+        messages.success(request, f"{label} complete — {min(max(earned, 0), question_count * 10)} points added to your score.")
+        return redirect(f"{reverse('games')}?grade={topic.subject.grade_level}&subject={topic.subject_id}")
+
+    questions = list(
+        topic.questions.filter(is_active=True).order_by("difficulty", "order", "id")
+    )
+    if not questions:
+        messages.info(request, "Questions are still being prepared for this game.")
+        return redirect(f"{reverse('games')}?grade={topic.subject.grade_level}&subject={topic.subject_id}")
+
+    cards = []
+    for question in questions:
+        answer = question.choices[question.correct_choice] if 0 <= question.correct_choice < len(question.choices) else ""
+        cards.append({
+            "prompt": question.prompt,
+            "answer": answer,
+            "explanation": question.explanation,
+        })
+
+    return render(
+        request,
+        "game_activity.html",
+        {
+            "topic": topic,
+            "progress": progress,
+            "mode": mode,
+            "mode_title": "Flashcards" if mode == "flashcards" else "Matching",
+            "cards": cards,
         },
     )
 
@@ -366,7 +424,6 @@ def school_admin(request):
             "form": form,
             "role_groups": role_groups,
             "total_staff_profiles": SchoolStaffProfile.objects.count(),
-            "google_meet_configured": google_meet.is_configured(),
             "login_history": LoginHistory.objects.select_related("user")[:20],
         },
     )
@@ -835,11 +892,7 @@ def classes_page(request):
             meeting_url = pasted_url
             space_name = ""
         else:
-            try:
-                meeting = google_meet.create_meeting()
-            except google_meet.GoogleMeetError as error:
-                messages.error(request, str(error))
-                return redirect("classes")
+            meeting = jitsi.create_meeting(title=title)
             meeting_url = meeting["join_url"]
             space_name = meeting["space_name"]
 
@@ -855,7 +908,7 @@ def classes_page(request):
             google_meet_space_name=space_name,
             recurrence="One-off",
         )
-        messages.success(request, "One-hour Google Meet lesson scheduled successfully.")
+        messages.success(request, "One-hour Jitsi Meet lesson scheduled successfully.")
         return redirect("classes")
 
     return render(
@@ -864,7 +917,6 @@ def classes_page(request):
         {
             "classes": SchoolClass.objects.order_by("id"),
             "is_staff": is_staff,
-            "google_meet_configured": google_meet.is_configured(),
         },
     )
 
@@ -875,12 +927,12 @@ def class_go_live(request, class_id):
     if not user or user.role not in ("teacher", "admin"):
         return redirect("login")
     school_class = get_object_or_404(SchoolClass, pk=class_id)
-    if not school_class.meeting_url.startswith("https://meet.google.com/"):
-        messages.error(request, "This lesson has no Google Meet link. Schedule a new Google Meet lesson.")
+    if not school_class.meeting_url.startswith("https://meet.jit.si/"):
+        messages.error(request, "This lesson has no Jitsi Meet link. Schedule a new Jitsi lesson.")
         return redirect("classes")
     school_class.status = "Live"
     school_class.save(update_fields=["status"])
-    messages.success(request, f"{school_class.title} is now live on Google Meet.")
+    messages.success(request, f"{school_class.title} is now live on Jitsi Meet.")
     return redirect("classes")
 
 
@@ -918,6 +970,44 @@ def exams_page(request):
     )
 
 
+def _knec_session_key(request):
+    """Per-session HMAC key the .knec packer signs manifests with."""
+    key = request.session.get("knec_hmac_key")
+    if not key:
+        key = secrets.token_hex(32)
+        request.session["knec_hmac_key"] = key
+    return key
+
+
+@require_http_methods(["POST"])
+def knec_submit(request):
+    """Receive a packed .knec archive, validate it and store valid ones."""
+    user = _current_user(request)
+    if not user:
+        return JsonResponse({"ok": False, "errors": ["Please log in before submitting."]}, status=401)
+    if user.role not in ("student", "teacher", "admin"):
+        return JsonResponse({"ok": False, "errors": ["Your account cannot submit practical archives."]}, status=403)
+    upload = request.FILES.get("archive")
+    if not upload:
+        return JsonResponse({"ok": False, "errors": ["Attach the packed .knec archive."]}, status=400)
+    manifest, errors = knec.validate_archive(
+        upload.read(), upload.name, _knec_session_key(request)
+    )
+    if errors:
+        return JsonResponse({"ok": False, "errors": errors}, status=400)
+    submission = KnecSubmission.objects.create(
+        subject_code=manifest["subject"]["code"],
+        index_number=str(manifest["candidate"]["index_number"]),
+        paper=manifest["subject"]["paper"],
+        archive=upload,
+        manifest=manifest,
+        uploaded_by=f"{user.first_name} {user.last_name}".strip() or user.email,
+    )
+    return JsonResponse(
+        {"ok": True, "submission_id": submission.pk, "manifest": manifest, "filename": upload.name}
+    )
+
+
 def practical_lab(request):
     user = _current_user(request)
     if not user:
@@ -934,7 +1024,12 @@ def practical_lab(request):
     return render(
         request,
         "practical_lab.html",
-        {"user": user, "whatsapp_configured": whatsapp.is_configured(), "practicals": practicals},
+        {
+            "user": user,
+            "whatsapp_configured": whatsapp.is_configured(),
+            "practicals": practicals,
+            "knec_hmac_key": _knec_session_key(request),
+        },
     )
 
 

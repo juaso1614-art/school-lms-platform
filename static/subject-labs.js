@@ -450,64 +450,111 @@
     const assemblyButton = document.querySelector("#toggle-assembly");
     const assemblyParts = document.querySelector("#assembly-parts");
     const assemblyStatus = document.querySelector("#assembly-status");
-    let assemblyIndex = 0;
-    let isAssembling = false;
-
+    const assemblyDropZone = document.querySelector("#assembly-dropzone");
+    const partInfo = document.querySelector("#lab-part-info");
+    const partDescriptions = {
+      "topographic model": "A raised-relief terrain model with contour rings. Compare contour spacing with slope steepness.",
+      "globe": "A rotating model of the Earth. Use it to locate study regions and explain day and night.",
+      "weather station": "Records temperature, humidity and wind readings for the weather study.",
+      "rain gauge & field compass": "Measures rainfall totals and field directions during fieldwork practice.",
+      "vocabulary cards": "Word cards used for listening and speaking practice.",
+      "listening console": "Plays recorded passages so learners can practise careful listening.",
+      "studio microphone": "Captures your voice for pronunciation and oral reading practice.",
+      "studio headphones": "Let you listen to model pronunciation without disturbing the class.",
+      "computer workstation": "The main workstation for programming and digital literacy tasks.",
+      "binary logic board": "Eight switches that model an 8-bit byte. Toggle them to read binary numbers.",
+      "network switch & test meter": "Demonstrates how devices connect and how cable tests are carried out.",
+      "digital piano": "Plays the notes used in pitch, rhythm and melody practice.",
+      "drum pads & metronome": "Keep a steady beat while practising rhythm patterns.",
+      "mixing console & headphones": "Balances the studio sound and lets you monitor the mix.",
+      "compound microscope": "Magnifies prepared slides so cells and stomata can be observed.",
+      "specimen slides & cell models": "Prepared onion, cheek and leaf specimens plus cell models.",
+      "digital imaging display": "Shows the enlarged specimen view for the whole class.",
+      "glassware & solutions": "Beakers holding the test solutions used in indicator work.",
+      "burette & retort stand": "Delivers measured volumes of solution during titration practice.",
+      "pH meter & indicator station": "Measures how acidic or alkaline a solution is.",
+      "fume hood": "Safe working space for experiments that release fumes.",
+      "crop beds & drip irrigation": "Model beds showing how water reaches crop roots.",
+      "soil samples & crop monitor": "Compares soil textures and tracks crop growth data.",
+    };
     const setSetupVisible = (visible) => equipment.forEach(({ group }) => {
       group.visible = visible;
     });
-    const resetSetup = () => {
-      setSetupVisible(true);
-      assemblyParts?.replaceChildren();
-      if (assemblyParts) assemblyParts.hidden = true;
-      isAssembling = false;
-      assemblyIndex = 0;
-      if (assemblyButton) assemblyButton.textContent = "Dismantle setup";
-      if (assemblyStatus) assemblyStatus.textContent = "Setup assembled. Dismantle it to begin the assembly challenge.";
+
+    equipment.forEach(({ name, group }) => {
+      group.userData.partName = name;
+      if (!partDescriptions[name]) {
+        partDescriptions[name] = "Part of this studio's bench. Inspect it, then drag it into place in the assembly challenge.";
+      }
+    });
+    const inspector = window.PeakLabInteractions?.initInspector({
+      THREE,
+      canvas,
+      camera,
+      parts: equipment.map(({ name, group }) => ({
+        name,
+        group,
+        description: partDescriptions[name],
+      })),
+      infoPanel: partInfo,
+    });
+    let pulseFrame = null;
+    const runPulse = () => {
+      if (pulseFrame) return;
+      const start = performance.now();
+      const step = () => {
+        if (!inspector?.selected) {
+          pulseFrame = null;
+          return;
+        }
+        inspector.pulse((performance.now() - start) / 1000);
+        render();
+        pulseFrame = requestAnimationFrame(step);
+      };
+      pulseFrame = requestAnimationFrame(step);
+    };
+    const inspectAt = (event) => {
+      const part = inspector?.pick(event);
+      inspector?.inspect(part ?? null);
+      if (part) runPulse();
+      else if (pulseFrame) {
+        cancelAnimationFrame(pulseFrame);
+        pulseFrame = null;
+        render();
+      }
       render();
     };
 
+    const assembly = window.PeakLabInteractions?.initAssembly({
+      partsHost: assemblyParts,
+      dropZone: assemblyDropZone,
+      statusEl: assemblyStatus,
+      order: assemblyPlans[lab.scene] || [],
+      onPlace: (name) => {
+        const item = equipment.find((part) => part.name === name);
+        if (item) item.group.visible = true;
+        render();
+      },
+    });
+    const showAssembledState = () => {
+      if (!assemblyButton) return;
+      assemblyButton.textContent = "Dismantle setup";
+      if (assemblyStatus) assemblyStatus.textContent = "Setup assembled. Dismantle it to begin the assembly challenge.";
+    };
     assemblyButton?.addEventListener("click", () => {
-      if (isAssembling) {
-        resetSetup();
-        return;
+      if (!assembly) return;
+      if (assembly.active) {
+        setSetupVisible(true);
+        assembly.leave();
+        if (assemblyDropZone) assemblyDropZone.hidden = true;
+        showAssembledState();
+      } else {
+        setSetupVisible(false);
+        inspector?.inspect(null);
+        if (assemblyDropZone) assemblyDropZone.hidden = false;
+        assemblyButton.textContent = "Reset setup";
+        assembly.enter();
       }
-      isAssembling = true;
-      assemblyIndex = 0;
-      setSetupVisible(false);
-      if (assemblyButton) assemblyButton.textContent = "Reset setup";
-      if (assemblyParts) {
-        assemblyParts.hidden = false;
-        assemblyParts.replaceChildren(...equipment.slice().reverse().map(({ name, group }) => {
-          const part = document.createElement("button");
-          part.className = "assembly-part";
-          part.type = "button";
-          part.textContent = name;
-          part.addEventListener("click", () => {
-            const expectedName = assemblyPlans[lab.scene]?.[assemblyIndex];
-            if (name !== expectedName) {
-              if (assemblyStatus) assemblyStatus.textContent = `Place ${expectedName} first.`;
-              return;
-            }
-            group.visible = true;
-            part.disabled = true;
-            assemblyIndex += 1;
-            const plan = assemblyPlans[lab.scene] || [];
-            if (assemblyIndex === plan.length) {
-              isAssembling = false;
-              assemblyParts.hidden = true;
-              if (assemblyButton) assemblyButton.textContent = "Dismantle setup";
-              if (assemblyStatus) assemblyStatus.textContent = "Setup assembled correctly. Dismantle it to try again.";
-            } else if (assemblyStatus) {
-              assemblyStatus.textContent = `${assemblyIndex} of ${plan.length} parts placed. Next: ${plan[assemblyIndex]}.`;
-            }
-            render();
-          });
-          return part;
-        }));
-      }
-      const plan = assemblyPlans[lab.scene] || [];
-      if (assemblyStatus) assemblyStatus.textContent = `Setup dismantled. Place ${plan[0]} first.`;
       render();
     });
     if (assemblyButton) assemblyButton.disabled = false;
@@ -538,13 +585,37 @@
 
     let dragging = false;
     let previous = null;
+    let pressPosition = null;
+    let pinchDistance = null;
+    const activePointers = new Map();
     canvas.addEventListener("pointerdown", (event) => {
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (activePointers.size === 2) {
+        const [first, second] = [...activePointers.values()];
+        pinchDistance = Math.hypot(first.x - second.x, first.y - second.y);
+        dragging = false;
+        previous = null;
+        return;
+      }
       dragging = true;
+      pressPosition = { x: event.clientX, y: event.clientY };
       previous = { x: event.clientX, y: event.clientY };
       canvas.setPointerCapture(event.pointerId);
       canvas.classList.add("is-dragging");
     });
     canvas.addEventListener("pointermove", (event) => {
+      if (activePointers.has(event.pointerId)) {
+        activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      }
+      if (pinchDistance !== null && activePointers.size === 2) {
+        const [first, second] = [...activePointers.values()];
+        const newDistance = Math.hypot(first.x - second.x, first.y - second.y);
+        distance = THREE.MathUtils.clamp(distance - (newDistance - pinchDistance) * 0.03, 8.5, 19);
+        pinchDistance = newDistance;
+        resetCamera();
+        render();
+        return;
+      }
       if (!dragging || !previous) return;
       yaw -= (event.clientX - previous.x) * 0.006;
       pitch = THREE.MathUtils.clamp(pitch + (event.clientY - previous.y) * 0.004, 0.16, 1.04);
@@ -552,9 +623,16 @@
       resetCamera();
       render();
     });
-    const stopDragging = () => {
+    const stopDragging = (event) => {
+      activePointers.delete(event.pointerId);
+      if (activePointers.size < 2) pinchDistance = null;
+      if (dragging && pressPosition) {
+        const moved = Math.hypot(event.clientX - pressPosition.x, event.clientY - pressPosition.y);
+        if (moved < 5) inspectAt(event);
+      }
       dragging = false;
       previous = null;
+      pressPosition = null;
       canvas.classList.remove("is-dragging");
     };
     canvas.addEventListener("pointerup", stopDragging);

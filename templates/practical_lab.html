@@ -48,10 +48,13 @@
         <span><i class="equipment-dot meter"></i>Digital voltmeter</span>
         <span><i class="equipment-dot lead"></i>Connecting leads</span>
       </div>
+      <p class="lab-scene-tip">Tap any apparatus in the 3D view to inspect it — the part glows and its role appears here.</p>
+      <div class="lab-part-info" id="lab-part-info" role="status" aria-live="polite"></div>
       <section class="physics-assembly" aria-labelledby="physics-assembly-heading">
         <div><span class="eyebrow">Setup practice</span><h3 id="physics-assembly-heading">Dismantle and assemble</h3></div>
         <button class="btn btn-light" type="button" id="physics-assembly-toggle" disabled>Dismantle setup</button>
         <p id="physics-assembly-status" role="status" aria-live="polite">Preparing the apparatus challenge…</p>
+        <div class="assembly-dropzone" id="physics-assembly-dropzone" hidden>Drag parts here to rebuild the setup — tap a part if dragging is awkward.</div>
         <div class="assembly-parts" id="physics-assembly-parts" role="group" aria-label="Physics apparatus parts" hidden></div>
       </section>
       <div class="meter-readings" aria-label="Live circuit readings">
@@ -111,9 +114,56 @@
         <p class="practical-result" id="practical-result" role="status" aria-live="polite"></p>
       </form>
     </section>
+
+    <section class="panel knec-panel" aria-labelledby="knec-heading">
+      <div class="results-heading">
+        <div><span class="eyebrow">KNEC digital assessment pipeline</span><h3 id="knec-heading">Pack &amp; submit your practical archive (.knec)</h3></div>
+        <span class="reading-count">Physics 232/3 · Chemistry 233/3 · Biology 231/3 · Computer 451/2</span>
+      </div>
+      <p class="knec-intro">
+        Your readings table, live workbench state, candidate report and captured media are compressed into a single,
+        tamper-proof <code>[IndexNumber]_[SubjectCode].knec</code> archive signed with HMAC-SHA256 before submission.
+      </p>
+      <form class="knec-form" id="knec-form" novalidate>
+        <div class="answer-controls knec-controls">
+          <label class="knec-field" for="knec-index">Candidate index number
+            <input id="knec-index" type="text" inputmode="numeric" pattern="\d{1,12}" placeholder="e.g. 40521234001" required>
+          </label>
+          <label class="knec-field" for="knec-subject">Subject
+            <select id="knec-subject">
+              <option value="232">Physics (232/3)</option>
+              <option value="233">Chemistry (233/3)</option>
+              <option value="231">Biology (231/3)</option>
+              <option value="451">Computer Studies (451/2)</option>
+            </select>
+          </label>
+          <label class="knec-field" for="knec-report">Candidate report (PDF)
+            <input id="knec-report" type="file" accept="application/pdf,.pdf" required>
+          </label>
+          <label class="knec-field" for="knec-photo">Apparatus setup photo (JPG)
+            <input id="knec-photo" type="file" accept="image/jpeg,.jpg,.jpeg">
+          </label>
+          <label class="knec-field" for="knec-proof">Process proof (WebM)
+            <input id="knec-proof" type="file" accept="video/webm,.webm">
+          </label>
+        </div>
+        <div class="answer-controls knec-actions">
+          <button class="btn btn-primary" type="button" id="knec-pack">Pack &amp; verify archive</button>
+          <button class="btn btn-light" type="button" id="knec-download" hidden>Download .knec</button>
+          <button class="btn btn-primary" type="button" id="knec-submit" disabled>Submit to examination office</button>
+        </div>
+        <p class="knec-status" id="knec-status" role="status" aria-live="polite"></p>
+        <p class="form-error" id="knec-detail" hidden></p>
+      </form>
+    </section>
   </div>
 </section>
 {{ practicals|json_script:"physics-practicals" }}
+{{ knec_hmac_key|json_script:"knec-hmac-key" }}
+<script src="/static/fflate.min.js" defer></script>
+<script src="/static/lab-interactions.js" defer></script>
 <script src="/static/practical-lab.js" defer></script>
 <script type="module" src="/static/practical-lab-3d.js"></script>
+<script src="/static/knec-packer.js" defer></script>
+<script src="/static/knec-submission.js" defer></script>
 {% endblock %}

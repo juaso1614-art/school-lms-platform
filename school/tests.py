@@ -8,13 +8,13 @@ from unittest.mock import patch
 from datetime import datetime
 from django.utils import timezone
 
-from . import whatsapp
-from . import google_meet
+from . import jitsi, knec, whatsapp
 from .models import (
     Exam,
     GameProgress,
     GameQuestion,
     GameTopic,
+    KnecSubmission,
     Invoice,
     LoginHistory,
     Payment,
@@ -373,14 +373,11 @@ class PortalTests(TestCase):
         ):
             whatsapp.send_group_message("Practical invite")
 
-    @patch.dict("os.environ", {}, clear=True)
-    def test_google_meet_reports_missing_configuration(self):
-        self.assertFalse(google_meet.is_configured())
-        with self.assertRaisesMessage(
-            google_meet.GoogleMeetError,
-            "Set GOOGLE_SERVICE_ACCOUNT_JSON and GOOGLE_MEET_DELEGATE_EMAIL.",
-        ):
-            google_meet._configuration()
+    def test_jitsi_needs_no_configuration(self):
+        self.assertTrue(jitsi.is_configured())
+        meeting = jitsi.create_meeting(title="Biology Revision")
+        self.assertTrue(meeting["join_url"].startswith("https://meet.jit.si/peak-group-biologyrevision-"))
+        self.assertTrue(meeting["space_name"].startswith("peak-group-"))
 
     def test_parent_cannot_open_student_practical_lab(self):
         parent = User(
@@ -743,14 +740,7 @@ class PortalTests(TestCase):
         self.assertRedirects(response, reverse("school_admin"))
         self.assertContains(self.client.get(reverse("school_admin")), "Grace Njeri")
 
-    def test_teacher_can_schedule_one_hour_google_meet_lesson(self):
-        response = self.client.post(
-            reverse("classes"),
-            {"title": "Science", "subject": "Biology", "start_at": "2030-05-10T09:00"},
-        )
-        self.assertRedirects(response, reverse("login"))
-        self.assertEqual(SchoolClass.objects.count(), 0)
-
+    def test_teacher_can_schedule_one_hour_jitsi_lesson(self):
         teacher = User(
             email="teacher@example.com",
             first_name="John",
@@ -763,36 +753,28 @@ class PortalTests(TestCase):
             reverse("login"),
             {"email": "teacher@example.com", "password": "teacher-pass"},
         )
-        fake_meeting = {
-            "join_url": "https://meet.google.com/abc-defg-hij",
-            "space_name": "spaces/space-123",
-        }
-        with patch("school.views.google_meet.create_meeting", return_value=fake_meeting) as create_meeting:
-            response = self.client.post(
-                reverse("classes"),
-                {"title": "Science", "subject": "Biology", "start_at": "2030-05-10T09:00"},
-            )
+        response = self.client.post(
+            reverse("classes"),
+            {"title": "Science", "subject": "Biology", "start_at": "2030-05-10T09:00"},
+        )
 
         self.assertRedirects(response, reverse("classes"))
-        create_meeting.assert_called_once_with()
         lesson = SchoolClass.objects.get(title="Science")
         self.assertEqual(lesson.end_time, "10:00 AM")
         self.assertEqual(lesson.lesson_date.isoformat(), "2030-05-10")
-        self.assertEqual(lesson.google_meet_space_name, "spaces/space-123")
+        self.assertTrue(lesson.meeting_url.startswith("https://meet.jit.si/peak-group-science-"))
+        self.assertEqual(lesson.google_meet_space_name, lesson.meeting_url.rsplit("/", 1)[1])
 
-        with patch("school.views.google_meet.create_meeting") as create_again:
-            response = self.client.post(reverse("class_go_live", args=[lesson.pk]))
+        response = self.client.post(reverse("class_go_live", args=[lesson.pk]))
         self.assertRedirects(response, reverse("classes"))
-        create_again.assert_not_called()
         lesson.refresh_from_db()
         self.assertEqual(lesson.status, "Live")
 
-    @patch("school.views.google_meet.create_meeting", side_effect=google_meet.GoogleMeetError("Google Meet is not configured."))
-    def test_google_meet_schedule_failure_is_reported_without_creating_a_class(self, _create_meeting):
+    def test_teacher_can_schedule_a_jitsi_lesson_with_a_pasted_link(self):
         teacher = User.objects.create(
-            email="teacher@example.com",
-            first_name="John",
-            last_name="Mwangi",
+            email="paste-link@example.com",
+            first_name="Ada",
+            last_name="Wanjiru",
             role="teacher",
         )
         session = self.client.session
@@ -801,62 +783,21 @@ class PortalTests(TestCase):
 
         response = self.client.post(
             reverse("classes"),
-            {"title": "Science", "subject": "Biology", "start_at": "2030-05-10T09:00"},
-        )
-
-        self.assertRedirects(response, reverse("classes"), fetch_redirect_response=False)
-        self.assertEqual(SchoolClass.objects.count(), 0)
-        response = self.client.get(reverse("classes"))
-        self.assertContains(response, "Google Meet is not configured.")
-
-    @patch("school.views.google_meet.is_configured", return_value=False)
-    def test_staff_are_told_when_google_meet_is_not_configured(self, _is_configured):
-        teacher = User.objects.create(
-            email="teacher@example.com",
-            first_name="John",
-            last_name="Mwangi",
-            role="teacher",
-        )
-        session = self.client.session
-        session["user_id"] = teacher.pk
-        session.save()
-
-        response = self.client.get(reverse("classes"))
-
-        self.assertContains(response, "Google Meet not configured")
-
-    @patch("school.google_meet._configuration", return_value="access-token")
-    @patch("school.google_meet.urllib.request.urlopen")
-    @patch("school.google_meet.json.load", return_value={
-        "name": "spaces/space-123",
-        "meetingUri": "https://meet.google.com/abc-defg-hij",
-    })
-    def test_google_meet_api_creates_meeting_space(
-        self, _json_load, urlopen, _configuration
-    ):
-        meeting = google_meet.create_meeting()
-
-        self.assertEqual(
-            meeting,
             {
-                "join_url": "https://meet.google.com/abc-defg-hij",
-                "space_name": "spaces/space-123",
+                "title": "Chemistry",
+                "subject": "Chemistry",
+                "start_at": "2030-05-10T09:00",
+                "meeting_url": "https://meet.jit.si/my-own-room",
             },
         )
-        request = urlopen.call_args.args[0]
-        payload = json.loads(request.data)
-        self.assertEqual(request.method, "POST")
-        self.assertEqual(request.full_url, "https://meet.googleapis.com/v2/spaces")
-        self.assertEqual(payload, {})
 
-    @patch.dict("os.environ", {}, clear=True)
-    def test_google_meet_api_reports_missing_configuration(self):
-        self.assertFalse(google_meet.is_configured())
-        with self.assertRaisesMessage(
-            google_meet.GoogleMeetError,
-            "Set GOOGLE_SERVICE_ACCOUNT_JSON and GOOGLE_MEET_DELEGATE_EMAIL.",
-        ):
-            google_meet._configuration()
+        self.assertRedirects(response, reverse("classes"))
+        lesson = SchoolClass.objects.get(title="Chemistry")
+        self.assertEqual(lesson.meeting_url, "https://meet.jit.si/my-own-room")
+
+    def test_staff_see_jitsi_classes_page(self):
+        response = self.client.get(reverse("classes"))
+        self.assertContains(response, "Live Jitsi Meet classes")
 
     def test_invoice_payment_updates_status(self):
         invoice = Invoice.objects.create(
@@ -919,3 +860,111 @@ class PortalTests(TestCase):
         )
         self.assertRedirects(response, reverse("exams"))
         self.assertEqual(Exam.objects.count(), 1)
+
+class KnecPackerTests(TestCase):
+    """End-to-end .knec archive validation and submission."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User(
+            email="candidate@example.com",
+            first_name="Brian",
+            last_name="Ochieng",
+            role="student",
+        )
+        cls.user.set_password("candidate-pass")
+        cls.user.save()
+
+    def _build_knec(self, index="40521234001", code="232", tamper=False):
+        import hashlib
+        import hmac
+        import json as jsonlib
+        import zipfile
+
+        subject = knec.SUBJECTS[code]
+        payload = {
+            "data/readings.csv": "No.,Rheostat (Ω),V (V),I (A),V / I (Ω)\r\n1,5,3.00,0.30,10.00\r\n",
+            "data/lab_state.json": jsonlib.dumps({"workbench": "physics-resistor-circuit"}),
+            "data/report.pdf": b"%PDF-1.4 candidate report",
+        }
+        inventory = [
+            {
+                "name": name,
+                "size": len(data if isinstance(data, bytes) else data.encode()),
+                "sha256": hashlib.sha256(data if isinstance(data, bytes) else data.encode()).hexdigest(),
+            }
+            for name, data in payload.items()
+        ]
+        manifest = {
+            "format": "KNEC-PRACTICAL-ARCHIVE",
+            "version": 1,
+            "generatedAt": "2026-10-17T10:00:00+00:00",
+            "candidate": {"index_number": index, "submitted_at": "2026-10-17T10:00:00+00:00", "user_agent": "test"},
+            "subject": {"code": code, "name": subject["name"], "paper": subject["paper"]},
+            "payload": inventory,
+            "media_expected": ["media/setup_photo.jpg", "media/process_proof.webm"],
+            "integrity": {"algorithm": "SHA-256", "signature": "HMAC-SHA256 over manifest.json"},
+        }
+        manifest_bytes = jsonlib.dumps(manifest).encode()
+        # Anonymous submissions are rejected before validation, so a fallback key is fine there.
+        session_key = self.client.session.get("knec_hmac_key", "0" * 64)
+        signature = hmac.new(session_key.encode(), manifest_bytes, hashlib.sha256).hexdigest()
+        if tamper:
+            signature = "0" * 64
+        buffer = BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            for name, data in payload.items():
+                archive.writestr(name, data)
+            archive.writestr("manifest.json", manifest_bytes)
+            archive.writestr("signature.sig", signature)
+        return f"{index}_{code}.knec", buffer.getvalue()
+
+    def _login_and_get_session_key(self):
+        self.client.post(reverse("login"), {"email": "candidate@example.com", "password": "candidate-pass"})
+        self.client.get(reverse("practical_exams"))
+        return self.client.session["knec_hmac_key"]
+
+    def test_valid_knec_submission_is_verified_and_stored(self):
+        self._login_and_get_session_key()
+        filename, archive_bytes = self._build_knec()
+        response = self.client.post(
+            reverse("knec_submit"),
+            {"archive": SimpleUploadedFile(filename, archive_bytes, content_type="application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+        submission = KnecSubmission.objects.get(pk=response.json()["submission_id"])
+        self.assertEqual(submission.index_number, "40521234001")
+        self.assertEqual(submission.subject_code, "232")
+        self.assertEqual(submission.paper, "3")
+        self.assertEqual(submission.archive.read(), archive_bytes)
+
+    def test_tampered_signature_is_rejected(self):
+        self._login_and_get_session_key()
+        filename, archive_bytes = self._build_knec(tamper=True)
+        response = self.client.post(
+            reverse("knec_submit"),
+            {"archive": SimpleUploadedFile(filename, archive_bytes, content_type="application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Signature verification failed", " ".join(response.json()["errors"]))
+        self.assertFalse(KnecSubmission.objects.exists())
+
+    def test_wrong_filename_and_missing_entries_are_rejected(self):
+        self._login_and_get_session_key()
+        filename, archive_bytes = self._build_knec()
+        response = self.client.post(
+            reverse("knec_submit"),
+            {"archive": SimpleUploadedFile("bad-name.zip", archive_bytes, content_type="application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(KnecSubmission.objects.exists())
+
+    def test_anonymous_submission_is_rejected(self):
+        filename, archive_bytes = self._build_knec()
+        response = self.client.post(
+            reverse("knec_submit"),
+            {"archive": SimpleUploadedFile(filename, archive_bytes, content_type="application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(KnecSubmission.objects.exists())
