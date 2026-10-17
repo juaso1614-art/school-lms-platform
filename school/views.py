@@ -23,6 +23,7 @@ from .models import (
     GameQuestion,
     GameTopic,
     Invoice,
+    LoginHistory,
     Payment,
     PracticalAttendance,
     ResourceMaterial,
@@ -60,7 +61,18 @@ def login_view(request):
         email = request.POST.get("email", "").strip()
         password = request.POST.get("password", "")
         user = User.objects.filter(email__iexact=email, is_active=True).first()
-        if user and user.check_password(password) and (not admin_login or user.role == "admin"):
+        authenticated = bool(
+            user
+            and user.check_password(password)
+            and (not admin_login or user.role == "admin")
+        )
+        LoginHistory.objects.create(
+            user=user,
+            email=email,
+            ip_address=request.META.get("REMOTE_ADDR") or None,
+            successful=authenticated,
+        )
+        if authenticated:
             request.session.cycle_key()
             request.session["user_id"] = user.pk
             request.session["role"] = user.role
@@ -355,6 +367,7 @@ def school_admin(request):
             "role_groups": role_groups,
             "total_staff_profiles": SchoolStaffProfile.objects.count(),
             "google_meet_configured": google_meet.is_configured(),
+            "login_history": LoginHistory.objects.select_related("user")[:20],
         },
     )
 
@@ -911,10 +924,17 @@ def practical_lab(request):
         return redirect("login")
     if user.role not in ("student", "teacher", "admin"):
         return redirect("dashboard")
+    practicals = (
+        {"title": "Estimate resistance", "steps": ("Adjust the rheostat to obtain different current values.", "Read the voltmeter and ammeter for each setting.", "Record six pairs of readings and estimate resistance using V / I.")},
+        {"title": "Verify Ohm's law", "steps": ("Record six voltage and current pairs as the rheostat changes.", "Compare how voltage changes as current changes.", "State whether the observations support a proportional relationship.")},
+        {"title": "Compare V / I values", "steps": ("Record the six readings across the rheostat range.", "Calculate V / I for each row in the results table.", "Compare the ratios and explain what they indicate about resistance.")},
+        {"title": "Investigate current and voltage", "steps": ("Start at low rheostat resistance and record a reading.", "Increase rheostat resistance in steps and record six pairs.", "Describe the trend between circuit current and the resistor voltage.")},
+        {"title": "Repeatability of readings", "steps": ("Choose a rheostat setting and record the meter readings.", "Repeat the same setting twice and compare the values.", "Use six readings to discuss consistency and likely measurement variation.")},
+    )
     return render(
         request,
         "practical_lab.html",
-        {"user": user, "whatsapp_configured": whatsapp.is_configured()},
+        {"user": user, "whatsapp_configured": whatsapp.is_configured(), "practicals": practicals},
     )
 
 
@@ -935,6 +955,13 @@ PRACTICAL_LABS = (
         ),
         "equipment": ("3D terrain model", "Contour map table", "Weather station", "Field compass", "Rain gauge"),
         "scene": "terrain",
+        "practicals": (
+            {"title": "Rainfall and runoff", "activity": "Compare simulated runoff at three rainfall levels and relate the change to the terrain slope.", "lesson_steps": ("Set rainfall to 20 mm and note the runoff estimate.", "Repeat at 60 mm and 90 mm, then compare the results."), "learning_outcome": "Explain how rainfall intensity and slope affect surface runoff."},
+            {"title": "Reading contour patterns", "activity": "Use the terrain model and contour lines to identify steep and gentle areas.", "lesson_steps": ("Rotate the terrain and locate the closest contour lines.", "Compare them with widely spaced contours and identify the steeper slope."), "learning_outcome": "Interpret contour spacing as evidence of changing gradient."},
+            {"title": "Erosion risk survey", "activity": "Investigate which parts of the model are most at risk of erosion during heavy rain.", "lesson_steps": ("Set rainfall to 90 mm and inspect the high and low ground.", "Identify a likely runoff path and explain where soil loss may be greatest."), "learning_outcome": "Use terrain and rainfall observations to identify erosion risk."},
+            {"title": "Field-site selection", "activity": "Choose a suitable site for a school path while avoiding steep slopes and concentrated runoff.", "lesson_steps": ("Rotate the terrain to compare the ridge, slope, and lower ground.", "Select a route and support it with contour and rainfall observations."), "learning_outcome": "Justify a land-use choice using physical geography evidence."},
+            {"title": "Weather station observation", "activity": "Conduct a short virtual field observation and relate the rainfall reading to the landscape.", "lesson_steps": ("Set two different rainfall values and observe the terrain response.", "Record how the weather condition could affect movement across the site."), "learning_outcome": "Connect a weather observation to likely effects on a local environment."},
+        ),
     },
     {
         "slug": "languages",
@@ -952,6 +979,13 @@ PRACTICAL_LABS = (
         ),
         "equipment": ("Studio microphone", "Listening headphones", "Audio recorder", "Phrase cards", "Waveform display"),
         "scene": "language",
+        "practicals": (
+            {"title": "Greeting and response", "activity": "Listen to a greeting and prepare a clear, appropriate spoken response.", "lesson_steps": ("Choose a phrase and listen at normal pace.", "Replay it slowly, then say the greeting and response aloud."), "learning_outcome": "Recognize and use a short greeting in the selected language."},
+            {"title": "Listening for key words", "activity": "Identify the important words in a short greeting or question.", "lesson_steps": ("Listen once without repeating the phrase.", "Replay it and identify the greeting, question, and time reference."), "learning_outcome": "Extract key meaning from a short spoken phrase."},
+            {"title": "Speech pace practice", "activity": "Compare how speech pace affects clarity and understanding.", "lesson_steps": ("Listen to the phrase at 0.6× pace and note one sound.", "Increase the pace gradually and repeat it clearly at normal speed."), "learning_outcome": "Adjust speaking pace while preserving clear pronunciation."},
+            {"title": "Language comparison", "activity": "Compare how the studio phrase expresses a greeting in different languages.", "lesson_steps": ("Listen to the English phrase and note its meaning.", "Choose Kiswahili or French and compare the greeting and question."), "learning_outcome": "Identify shared meaning across greetings in different languages."},
+            {"title": "Pronunciation and fluency", "activity": "Practice a complete phrase with steady pace and clear pronunciation.", "lesson_steps": ("Listen to the phrase once at normal pace.", "Repeat it slowly, then again at normal pace with clear word endings."), "learning_outcome": "Deliver a short phrase with improved fluency and intelligibility."},
+        ),
     },
     {
         "slug": "computer",
@@ -969,6 +1003,13 @@ PRACTICAL_LABS = (
         ),
         "equipment": ("3D workstation", "Monitor & keyboard", "Binary logic board", "Network switch", "Digital multimeter"),
         "scene": "computer",
+        "practicals": (
+            {"title": "Binary to decimal", "activity": "Convert an 8-bit binary input to decimal and check the displayed result.", "lesson_steps": ("Set the switches to 00000101 and add the active place values.", "Try 00001010 and compare your sum with the board."), "learning_outcome": "Convert an 8-bit binary number into its decimal value."},
+            {"title": "Place-value investigation", "activity": "Investigate how each switch position contributes to the value of a byte.", "lesson_steps": ("Turn on one switch at a time, starting with bit 0.", "Record the decimal change for bit 1, bit 2, and bit 3."), "learning_outcome": "Explain the powers-of-two place values in a binary number."},
+            {"title": "Binary pattern comparison", "activity": "Compare binary patterns and explain how changing one bit affects the total.", "lesson_steps": ("Enter 00001111 and record its decimal value.", "Turn off the 1, 2, and 4 place-value switches one at a time."), "learning_outcome": "Relate a change in binary digits to a change in decimal value."},
+            {"title": "Build a target number", "activity": "Construct a binary byte that represents a chosen decimal target.", "lesson_steps": ("Choose a target from 12 to 30 and identify its powers of two.", "Set the matching switches and verify the displayed decimal result."), "learning_outcome": "Represent a decimal value using an 8-bit binary pattern."},
+            {"title": "Byte capacity", "activity": "Explore the range of values represented by an unsigned 8-bit byte.", "lesson_steps": ("Set all switches off and record the minimum value.", "Set all switches on and explain how the maximum is formed."), "learning_outcome": "Determine the minimum and maximum unsigned values of a byte."},
+        ),
     },
     {
         "slug": "music",
@@ -986,6 +1027,13 @@ PRACTICAL_LABS = (
         ),
         "equipment": ("Digital piano", "Drum pads", "Studio headphones", "Mixing console", "Metronome"),
         "scene": "music",
+        "practicals": (
+            {"title": "Pitch ordering", "activity": "Compare keyboard notes and arrange them from lowest to highest pitch.", "lesson_steps": ("Play C, E, and G one at a time.", "Order the notes by pitch and describe the difference you hear."), "learning_outcome": "Describe how pitch changes across selected musical notes."},
+            {"title": "Tempo and pulse", "activity": "Investigate how tempo changes the spacing of a steady musical pulse.", "lesson_steps": ("Play one beat at 60 BPM and tap four steady beats.", "Repeat at 120 BPM and compare the time between beats."), "learning_outcome": "Explain the relationship between BPM and pulse speed."},
+            {"title": "Major-triad listening", "activity": "Listen to the notes C, E, and G as a simple major-triad pattern.", "lesson_steps": ("Play C, E, and G in order, keeping each note even.", "Repeat the pattern and identify which note sounds highest."), "learning_outcome": "Recognize a simple ordered pitch pattern by listening."},
+            {"title": "Rhythm accuracy", "activity": "Keep a steady four-beat rhythm against two different metronome settings.", "lesson_steps": ("Set 80 BPM and tap four beats with the metronome.", "Set 120 BPM and repeat without speeding up between clicks."), "learning_outcome": "Maintain a consistent pulse at different tempos."},
+            {"title": "Tempo performance", "activity": "Perform the same short note pattern at a slow and a fast tempo.", "lesson_steps": ("Play C, D, E, and G at 60 BPM.", "Repeat at 120 BPM and describe how the character changes."), "learning_outcome": "Connect tempo changes with the perceived character of music."},
+        ),
     },
     {
         "slug": "biology",
@@ -1003,6 +1051,13 @@ PRACTICAL_LABS = (
         ),
         "equipment": ("Compound microscope", "Prepared specimen slides", "Cell models", "Digital imaging screen", "Slide cabinet"),
         "scene": "biology",
+        "practicals": (
+            {"title": "Magnification and field of view", "activity": "Observe how magnification changes specimen size and the visible field.", "lesson_steps": ("Focus the onion specimen at 40× and note the visible area.", "Increase to 100× and 200×, then compare the field of view."), "learning_outcome": "Explain the trade-off between magnification and field of view."},
+            {"title": "Plant and animal cells", "activity": "Compare prepared plant and animal cell specimens using the virtual microscope.", "lesson_steps": ("Focus the onion epidermis and note its visible cell boundaries.", "Switch to the cheek smear and record one difference in appearance."), "learning_outcome": "Compare visible features of plant and animal cells."},
+            {"title": "Leaf stomata survey", "activity": "Inspect a leaf section and locate the stomata shown in the specimen model.", "lesson_steps": ("Select the leaf section at 100× magnification.", "Increase magnification and locate the stomata in the field of view."), "learning_outcome": "Identify stomata and relate them to leaf structure."},
+            {"title": "Specimen comparison", "activity": "Compare two specimens at the same magnification for a fair observation.", "lesson_steps": ("Observe onion epidermis at 100× and record a feature.", "Observe cheek cells at 100× and compare the visible structures."), "learning_outcome": "Make a fair comparison by controlling magnification."},
+            {"title": "Microscope focusing", "activity": "Practice moving from a broad view to a more detailed view of a specimen.", "lesson_steps": ("Start with the onion specimen at 40× and bring it into focus.", "Increase magnification in stages and describe the added detail."), "learning_outcome": "Use magnification systematically to examine a specimen."},
+        ),
     },
     {
         "slug": "chemistry",
@@ -1020,6 +1075,13 @@ PRACTICAL_LABS = (
         ),
         "equipment": ("Volumetric glassware", "Burette & retort stand", "Indicator bottles", "Digital pH meter", "Fume hood"),
         "scene": "chemistry",
+        "practicals": (
+            {"title": "Classify solutions by pH", "activity": "Use a selected indicator to classify virtual solutions as acidic, neutral, or alkaline.", "lesson_steps": ("Test distilled water with universal indicator and note its colour.", "Compare citrus, bicarbonate, and soap solutions with the same indicator."), "learning_outcome": "Classify simulated solutions using indicator evidence."},
+            {"title": "Indicator comparison", "activity": "Compare how different indicators display the same simulated solution.", "lesson_steps": ("Choose vinegar and test it with universal indicator.", "Repeat with litmus and phenolphthalein; compare the displayed changes."), "learning_outcome": "Describe how indicators provide evidence about a solution."},
+            {"title": "Acidity ranking", "activity": "Rank the available simulated solutions by their approximate acidity.", "lesson_steps": ("Test citrus, vinegar, and distilled water using universal indicator.", "Order the results by approximate pH and justify the ranking."), "learning_outcome": "Use approximate pH evidence to compare acidity."},
+            {"title": "Neutrality investigation", "activity": "Use the pH scale to identify a neutral reference among the simulated solutions.", "lesson_steps": ("Test distilled water with universal indicator.", "Compare its result with vinegar and bicarbonate solution."), "learning_outcome": "Identify neutral conditions and distinguish them from acidic or alkaline ones."},
+            {"title": "Indicator selection", "activity": "Choose an indicator suited to distinguishing the available acidic and alkaline samples.", "lesson_steps": ("Compare the indicator choices using vinegar and soap solution.", "Select the clearest indicator for the comparison and explain why."), "learning_outcome": "Select an indicator and support the choice with observed results."},
+        ),
     },
     {
         "slug": "agriculture",
@@ -1037,6 +1099,13 @@ PRACTICAL_LABS = (
         ),
         "equipment": ("Virtual crop beds", "Soil texture samples", "Drip irrigation lines", "Rain gauge", "Crop growth monitor"),
         "scene": "agriculture",
+        "practicals": (
+            {"title": "Irrigation and crop growth", "activity": "Compare how irrigation amount affects a selected crop growing in loam soil.", "lesson_steps": ("Run the chosen crop at 25 mm irrigation.", "Repeat at 50 mm and 75 mm, keeping crop and soil unchanged."), "learning_outcome": "Use a controlled comparison to relate irrigation to simulated growth."},
+            {"title": "Soil water retention", "activity": "Compare water retention across sandy, loamy, and clay soils.", "lesson_steps": ("Run the same crop at 50 mm in sandy soil.", "Repeat in loam and clay, keeping all other conditions constant."), "learning_outcome": "Explain how soil texture influences water availability."},
+            {"title": "Crop water needs", "activity": "Compare simulated water needs for maize, beans, and kale under the same conditions.", "lesson_steps": ("Run each crop in loam soil with 50 mm irrigation.", "Compare the growth estimates and identify which crop responds best."), "learning_outcome": "Compare crop responses while holding soil and irrigation constant."},
+            {"title": "Fair field trial", "activity": "Design a fair virtual trial by changing one growing condition at a time.", "lesson_steps": ("Choose maize in loam soil and run at 25 mm irrigation.", "Change only irrigation to 50 mm, then only soil to sandy."), "learning_outcome": "Explain why changing one variable at a time supports a fair test."},
+            {"title": "Irrigation planning", "activity": "Find a suitable irrigation level for the selected crop and soil combination.", "lesson_steps": ("Run the trial at 25 mm, 50 mm, and 75 mm per week.", "Choose the best result and justify it using the simulated growth and retention."), "learning_outcome": "Use trial evidence to recommend an irrigation plan."},
+        ),
     },
 )
 

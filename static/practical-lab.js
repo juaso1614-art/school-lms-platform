@@ -27,6 +27,22 @@
   const readings = [];
   const supplyVoltage = 3;
   const testResistance = 10;
+  const practicalsNode = document.querySelector("#physics-practicals");
+  const practicalChoice = document.querySelector("#physics-practical-choice");
+  if (practicalsNode && practicalChoice) {
+    const practicals = JSON.parse(practicalsNode.textContent || "[]");
+    practicalChoice.addEventListener("change", () => {
+      const practical = practicals[Number(practicalChoice.value)];
+      if (!practical) return;
+      document.querySelector("#physics-practical-title").textContent = practical.title;
+      const stepList = document.querySelector("#physics-practical-steps");
+      stepList.replaceChildren(...practical.steps.map((step) => {
+        const item = document.createElement("li");
+        item.textContent = step;
+        return item;
+      }));
+    });
+  }
 
   const circuitValues = () => {
     const rheostatResistance = Number(slider.value);

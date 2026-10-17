@@ -297,6 +297,27 @@
   font-size: 13px;
 }
 
+.lab-control-panel > label[for="practical-choice"] {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 7px;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.lab-control-panel > #practical-choice {
+  width: 100%;
+  min-height: 40px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid #bdcbd1;
+  border-radius: 4px;
+  color: var(--ink);
+  background: #ffffff;
+  font: inherit;
+}
+
 .practical-lesson-guide {
   margin: 0 0 18px;
   padding: 13px 14px;

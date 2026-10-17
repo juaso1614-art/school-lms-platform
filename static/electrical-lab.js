@@ -6,6 +6,20 @@
   const componentsGroup = document.querySelector("#circuit-components");
   const componentSpecs = JSON.parse(document.querySelector("#component-specs").textContent);
   const initialCircuit = JSON.parse(document.querySelector("#initial-circuit").textContent);
+  const practicals = JSON.parse(document.querySelector("#electrical-practicals").textContent || "[]");
+  const practicalChoice = document.querySelector("#electrical-practical-choice");
+  practicalChoice?.addEventListener("change", () => {
+    const practical = practicals[Number(practicalChoice.value)];
+    if (!practical) return;
+    document.querySelector("#electrical-practical-title").textContent = practical.title;
+    document.querySelector("#electrical-practical-description").textContent = practical.description;
+    const stepList = document.querySelector("#electrical-practical-steps");
+    stepList.replaceChildren(...practical.steps.map((step) => {
+      const item = document.createElement("li");
+      item.textContent = step;
+      return item;
+    }));
+  });
   const diagnostics = document.querySelector("#electrical-diagnostics");
   const attemptIdNode = document.querySelector("#electrical-attempt-id");
   const csrfToken = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith("csrftoken="))?.split("=")[1] || "";

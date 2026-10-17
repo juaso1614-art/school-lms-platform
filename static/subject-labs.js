@@ -20,6 +20,26 @@
     if (feedback) feedback.textContent = text;
   }
 
+  const practicalChoice = document.querySelector("#practical-choice");
+  practicalChoice?.addEventListener("change", () => {
+    const practical = lab.practicals?.[Number(practicalChoice.value)];
+    if (!practical) return;
+
+    const activity = document.querySelector("#activity-instructions");
+    const lessonSteps = document.querySelector("#practical-lesson-steps");
+    const outcome = document.querySelector("#practical-learning-outcome");
+    if (activity) activity.textContent = practical.activity;
+    if (lessonSteps) {
+      lessonSteps.replaceChildren(...practical.lesson_steps.map((step) => {
+        const item = document.createElement("li");
+        item.textContent = step;
+        return item;
+      }));
+    }
+    if (outcome) outcome.textContent = practical.learning_outcome;
+    if (feedback) feedback.textContent = `Practical ${Number(practicalChoice.value) + 1} of ${lab.practicals.length} selected. Start the activity to record an observation.`;
+  });
+
   document.querySelector("#clear-observations")?.addEventListener("click", () => {
     observations?.replaceChildren();
     if (emptyMessage) emptyMessage.hidden = false;

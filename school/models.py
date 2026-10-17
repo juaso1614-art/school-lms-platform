@@ -33,6 +33,23 @@ class User(models.Model):
         return self.email
 
 
+class LoginHistory(models.Model):
+    user = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="login_history",
+    )
+    email = models.CharField(max_length=254)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    successful = models.BooleanField(default=False)
+    attempted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-attempted_at", "-id")
+
+
 class ResourceMaterial(models.Model):
     title = models.CharField(max_length=200)
     subject = models.CharField(max_length=100)

@@ -5,6 +5,21 @@
 <section class="page-section school-admin-page"><div class="container">
   <div class="section-heading left"><span class="eyebrow">School leadership and staff</span><h2>School administration</h2><p>Manage the people and reporting structure across the school.</p></div>
   <div class="school-admin-summary"><span>{{ total_staff_profiles }}</span><div><strong>Staff profiles</strong><small>Across all roles</small></div></div>
+  <section class="panel" aria-labelledby="login-history-heading">
+    <h3 id="login-history-heading">Recent login history</h3>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th scope="col">Account</th><th scope="col">Result</th><th scope="col">Time</th><th scope="col">IP address</th></tr></thead>
+        <tbody>
+          {% for attempt in login_history %}
+            <tr><td>{{ attempt.email }}</td><td>{% if attempt.successful %}Successful{% else %}Failed{% endif %}</td><td>{{ attempt.attempted_at|date:"Y-m-d H:i" }}</td><td>{{ attempt.ip_address|default:"Unavailable" }}</td></tr>
+          {% empty %}
+            <tr><td colspan="4">No sign-in attempts recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
   <section class="panel school-meet-status" aria-labelledby="meet-status-heading">
     <div><h3 id="meet-status-heading">Google Meet</h3>
       {% if google_meet_configured %}

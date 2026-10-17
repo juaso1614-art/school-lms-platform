@@ -33,13 +33,17 @@
     <div class="lab-learning-grid">
       <section class="lab-control-panel" aria-labelledby="activity-title">
         <span class="eyebrow">Guided practical</span><h2 id="activity-title">Your activity</h2>
-        <p class="activity-instructions">{{ lab.activity }}</p>
+        <label for="practical-choice">Select practical</label>
+        <select id="practical-choice">
+          {% for practical in lab.practicals %}<option value="{{ forloop.counter0 }}">{{ forloop.counter }}. {{ practical.title }}</option>{% endfor %}
+        </select>
+        <p class="activity-instructions" id="activity-instructions">{{ lab.practicals.0.activity|default:lab.activity }}</p>
         <div class="practical-lesson-guide">
           <span class="eyebrow">Practical lesson</span>
-          <ol class="practical-lesson-steps">
-            {% for step in lab.lesson_steps %}<li>{{ step }}</li>{% endfor %}
+          <ol class="practical-lesson-steps" id="practical-lesson-steps">
+            {% for step in lab.practicals.0.lesson_steps|default:lab.lesson_steps %}<li>{{ step }}</li>{% endfor %}
           </ol>
-          <p class="practical-lesson-outcome"><strong>Learning outcome:</strong> {{ lab.learning_outcome }}</p>
+          <p class="practical-lesson-outcome"><strong>Learning outcome:</strong> <span id="practical-learning-outcome">{{ lab.practicals.0.learning_outcome|default:lab.learning_outcome }}</span></p>
         </div>
         {% if lab.slug == "geography" %}
         <div class="lab-control"><label for="rainfall">Simulated rainfall <output id="rainfall-value">40 mm</output></label><input id="rainfall" type="range" min="0" max="100" value="40"><button class="lab-action" id="run-geography" type="button">Run terrain study</button></div>

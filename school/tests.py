@@ -16,6 +16,7 @@ from .models import (
     GameQuestion,
     GameTopic,
     Invoice,
+    LoginHistory,
     Payment,
     PracticalAttendance,
     ResourceMaterial,
@@ -87,6 +88,28 @@ class PortalTests(TestCase):
         self.assertContains(response, reverse("practical_exams"))
         self.assertContains(response, reverse("electrical_lab"))
 
+    def test_physics_practical_page_offers_five_exercises(self):
+        session = self.client.session
+        session["user_id"] = self.user.pk
+        session.save()
+
+        response = self.client.get(reverse("practical_exams"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["practicals"]), 5)
+        self.assertContains(response, 'id="physics-practical-choice"')
+
+    def test_electrical_lab_offers_five_exercises(self):
+        session = self.client.session
+        session["user_id"] = self.user.pk
+        session.save()
+
+        response = self.client.get(reverse("electrical_lab"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["practicals"]), 5)
+        self.assertContains(response, 'id="electrical-practical-choice"')
+
     def test_student_can_open_every_requested_subject_lab(self):
         session = self.client.session
         session["user_id"] = self.user.pk
@@ -108,6 +131,8 @@ class PortalTests(TestCase):
                 self.assertContains(response, expected)
                 self.assertContains(response, "Interactive 3D studio")
                 self.assertContains(response, 'class="practical-lesson-steps"')
+                self.assertEqual(len(response.context["lab"]["practicals"]), 5)
+                self.assertContains(response, 'id="practical-choice"')
                 if slug == "agriculture":
                     self.assertContains(response, 'id="agriculture-result"')
 
@@ -438,6 +463,7 @@ class PortalTests(TestCase):
             {"email": "student@example.com", "password": "student-pass"},
         )
         self.assertRedirects(response, reverse("dashboard"))
+        self.assertTrue(LoginHistory.objects.get(email="student@example.com").successful)
         self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)
         self.client.get(reverse("logout"))
         self.assertRedirects(self.client.get(reverse("dashboard")), reverse("login"))
@@ -454,6 +480,7 @@ class PortalTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Invalid email or password.")
         self.assertNotIn("user_id", self.client.session)
+        self.assertFalse(LoginHistory.objects.get(email="student@example.com").successful)
 
         admin = User.objects.create(
             email="admin@example.com",
@@ -470,6 +497,9 @@ class PortalTests(TestCase):
         )
         self.assertRedirects(response, reverse("school_admin"))
         self.assertEqual(self.client.session["user_id"], admin.pk)
+        response = self.client.get(reverse("school_admin"))
+        self.assertContains(response, "Recent login history")
+        self.assertContains(response, "admin@example.com")
 
     def test_invalid_login_shows_error_without_unauthorized_response(self):
         response = self.client.post(

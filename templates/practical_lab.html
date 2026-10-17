@@ -60,12 +60,13 @@
       <aside class="practical-side">
         <section class="panel practical-task">
           <span class="eyebrow">Task</span>
-          <h3>Determine the resistance</h3>
-          <ol>
-            <li>Adjust the rheostat to obtain different current values.</li>
-            <li>Read the voltmeter and ammeter for each setting.</li>
-            <li>Record six pairs of readings in your results table.</li>
-            <li>Use your observations to estimate the resistor's resistance.</li>
+          <label for="physics-practical-choice">Select practical</label>
+          <select id="physics-practical-choice">
+            {% for practical in practicals %}<option value="{{ forloop.counter0 }}">{{ forloop.counter }}. {{ practical.title }}</option>{% endfor %}
+          </select>
+          <h3 id="physics-practical-title">{{ practicals.0.title }}</h3>
+          <ol id="physics-practical-steps">
+            {% for step in practicals.0.steps %}<li>{{ step }}</li>{% endfor %}
           </ol>
           <div class="task-data"><span>Supply voltage</span><strong>3.0 V</strong><span>Test resistor</span><strong>10 Ω</strong></div>
         </section>
@@ -106,6 +107,7 @@
     </section>
   </div>
 </section>
+{{ practicals|json_script:"physics-practicals" }}
 <script src="/static/practical-lab.js" defer></script>
 <script type="module" src="/static/practical-lab-3d.js"></script>
 {% endblock %}

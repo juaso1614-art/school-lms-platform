@@ -11,6 +11,14 @@
   </div>
   <p class="electrical-safety-note"><strong>Virtual training only.</strong> This simulator does not authorize or guide real electrical work. Never work on live equipment.</p>
 
+  <section class="electrical-practical-guide" aria-labelledby="electrical-practical-title">
+    <div><span class="eyebrow">Guided practical</span><h3 id="electrical-practical-title">{{ practicals.0.title }}</h3><p id="electrical-practical-description">{{ practicals.0.description }}</p></div>
+    <label for="electrical-practical-choice">Select practical
+      <select id="electrical-practical-choice">{% for practical in practicals %}<option value="{{ forloop.counter0 }}">{{ forloop.counter }}. {{ practical.title }}</option>{% endfor %}</select>
+    </label>
+    <ol id="electrical-practical-steps">{% for step in practicals.0.steps %}<li>{{ step }}</li>{% endfor %}</ol>
+  </section>
+
   <div class="electrical-workspace">
     <aside class="electrical-toolbox" aria-labelledby="toolbox-heading">
       <span class="eyebrow">Components</span><h3 id="toolbox-heading">Add to board</h3>
@@ -57,5 +65,6 @@
 {{ component_specs|json_script:"component-specs" }}
 {{ initial_circuit|json_script:"initial-circuit" }}
 {{ initial_result|json_script:"initial-attempt-result" }}
+{{ practicals|json_script:"electrical-practicals" }}
 <script src="/static/electrical-lab.js" defer></script>
 {% endblock %}

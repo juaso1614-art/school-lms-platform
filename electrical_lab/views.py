@@ -13,6 +13,13 @@ from .simulator import COMPONENTS, CircuitPayloadError, simulate_lighting_circui
 
 
 ALLOWED_ROLES = ("student", "teacher", "admin")
+ELECTRICAL_PRACTICALS = (
+    {"title": "Identify circuit components", "description": "Explore the supply, protective device, switch, and lamp before building a lighting circuit.", "steps": ("Add one AC supply, one MCB, one 1-way switch, and one lamp.", "Select each component and inspect its terminals.", "Name the role of each component in the circuit.")},
+    {"title": "Build a one-way lighting circuit", "description": "Connect the components to make a controlled lighting circuit and test the result.", "steps": ("Add the supply, MCB, switch, and lamp.", "Connect matching live, neutral, and earth terminals as shown by the simulator.", "Close the switch, turn on the supply, and run a circuit test.")},
+    {"title": "Switch operation investigation", "description": "Observe how opening and closing the switch changes the simulated circuit state.", "steps": ("Build and test the one-way lighting circuit.", "Toggle the switch open and test the circuit.", "Close the switch and compare the diagnostic and lamp state.")},
+    {"title": "Protective device check", "description": "Investigate the MCB's position and state in the simulated lighting circuit.", "steps": ("Build the circuit with the MCB between the supply and switched load.", "Test with the MCB off, then on.", "Explain how the protective device affects the circuit path.")},
+    {"title": "Fault finding and commissioning", "description": "Use simulator diagnostics to identify a wiring or switching problem before commissioning.", "steps": ("Build the circuit and test it before energizing.", "Introduce an open switch or incorrect connection and inspect diagnostics.", "Correct the issue, retest, and confirm the expected lamp state.")},
+)
 
 
 def _active_user(request):
@@ -65,6 +72,7 @@ def lab_home(request):
         "electrical_lab.html",
         {
             "exercise": exercise,
+            "practicals": ELECTRICAL_PRACTICALS,
             "progress": progress,
             "attempt": attempt,
             "initial_result": {
