@@ -48,6 +48,12 @@
         <span><i class="equipment-dot meter"></i>Digital voltmeter</span>
         <span><i class="equipment-dot lead"></i>Connecting leads</span>
       </div>
+      <section class="physics-assembly" aria-labelledby="physics-assembly-heading">
+        <div><span class="eyebrow">Setup practice</span><h3 id="physics-assembly-heading">Dismantle and assemble</h3></div>
+        <button class="btn btn-light" type="button" id="physics-assembly-toggle" disabled>Dismantle setup</button>
+        <p id="physics-assembly-status" role="status" aria-live="polite">Preparing the apparatus challenge…</p>
+        <div class="assembly-parts" id="physics-assembly-parts" role="group" aria-label="Physics apparatus parts" hidden></div>
+      </section>
       <div class="meter-readings" aria-label="Live circuit readings">
         <div><span>Voltmeter</span><strong><output id="voltage-reading">3.00</output> V</strong></div>
         <div><span>Ammeter</span><strong><output id="current-reading">0.30</output> A</strong></div>

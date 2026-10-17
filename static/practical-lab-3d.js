@@ -54,12 +54,12 @@
       roughness,
       metalness,
     });
-    const makeBox = (width, height, depth, material, position) => {
+    const makeBox = (width, height, depth, material, position, parent = scene) => {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
       mesh.position.set(...position);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      scene.add(mesh);
+      parent.add(mesh);
       return mesh;
     };
 
@@ -150,7 +150,7 @@
           knob.position.set(knobX, height + 0.06, -0.08);
           knob.castShadow = true;
           group.add(knob);
-          const indicator = makeBox(0.035, 0.012, 0.12, standardMaterial("#e3a85e", 0.4), [x + knobX, benchTop + height + 0.13, z - 0.08]);
+          const indicator = makeBox(0.035, 0.012, 0.12, standardMaterial("#e3a85e", 0.4), [knobX, height + 0.13, -0.08], group);
           indicator.castShadow = false;
         }
       }
@@ -193,9 +193,11 @@
       initialValue: "3.00 V",
     });
 
+    const rheostatGroup = new THREE.Group();
+    scene.add(rheostatGroup);
     const metalMaterial = standardMaterial("#9ca9a2", 0.3, 0.78);
     const ceramicMaterial = standardMaterial("#d5dfd6", 0.4, 0.06);
-    makeBox(2.45, 0.13, 0.58, standardMaterial("#626e68", 0.55, 0.28), [-1.35, benchTop + 0.09, 0.25]);
+    makeBox(2.45, 0.13, 0.58, standardMaterial("#626e68", 0.55, 0.28), [-1.35, benchTop + 0.09, 0.25], rheostatGroup);
 
     const rheostatCoil = new THREE.Mesh(
       new THREE.CylinderGeometry(0.23, 0.23, 1.9, 32),
@@ -204,7 +206,7 @@
     rheostatCoil.rotation.z = Math.PI / 2;
     rheostatCoil.position.set(-1.35, benchTop + 0.43, 0.25);
     rheostatCoil.castShadow = true;
-    scene.add(rheostatCoil);
+    rheostatGroup.add(rheostatCoil);
 
     const coilMaterial = standardMaterial("#b8773e", 0.32, 0.72);
     for (let index = 0; index < 17; index += 1) {
@@ -212,11 +214,11 @@
       coil.rotation.y = Math.PI / 2;
       coil.position.set(-2.15 + index * 0.1, benchTop + 0.43, 0.25);
       coil.castShadow = true;
-      scene.add(coil);
+      rheostatGroup.add(coil);
     }
 
     const sliderGroup = new THREE.Group();
-    scene.add(sliderGroup);
+    rheostatGroup.add(sliderGroup);
     const sliderStem = new THREE.Mesh(
       new THREE.CylinderGeometry(0.045, 0.06, 0.47, 16),
       metalMaterial,
@@ -232,9 +234,11 @@
     sliderGrip.castShadow = true;
     sliderGroup.add(sliderGrip);
 
-    makeBox(0.09, 0.09, 0.08, metalMaterial, [-2.25, benchTop + 0.14, 0.25]);
-    makeBox(0.09, 0.09, 0.08, metalMaterial, [-0.45, benchTop + 0.14, 0.25]);
+    makeBox(0.09, 0.09, 0.08, metalMaterial, [-2.25, benchTop + 0.14, 0.25], rheostatGroup);
+    makeBox(0.09, 0.09, 0.08, metalMaterial, [-0.45, benchTop + 0.14, 0.25], rheostatGroup);
 
+    const resistorGroup = new THREE.Group();
+    scene.add(resistorGroup);
     const resistorBody = new THREE.Mesh(
       new THREE.CylinderGeometry(0.22, 0.22, 1.15, 32),
       standardMaterial("#eee4cb", 0.4, 0.02),
@@ -242,22 +246,24 @@
     resistorBody.rotation.z = Math.PI / 2;
     resistorBody.position.set(1.2, benchTop + 0.36, 0.25);
     resistorBody.castShadow = true;
-    scene.add(resistorBody);
+    resistorGroup.add(resistorBody);
     for (const [offset, color] of [[-0.34, "#9c503b"], [-0.08, "#d1a446"], [0.18, "#57463b"], [0.39, "#bd7653"]]) {
       const band = new THREE.Mesh(new THREE.TorusGeometry(0.224, 0.037, 8, 22), standardMaterial(color, 0.35));
       band.rotation.y = Math.PI / 2;
       band.position.set(1.2 + offset, benchTop + 0.36, 0.25);
       band.castShadow = true;
-      scene.add(band);
+      resistorGroup.add(band);
     }
     for (const [x, length] of [[0.43, 0.38], [1.97, 0.38]]) {
       const lead = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, length, 12), metalMaterial);
       lead.rotation.z = Math.PI / 2;
       lead.position.set(x, benchTop + 0.36, 0.25);
       lead.castShadow = true;
-      scene.add(lead);
+      resistorGroup.add(lead);
     }
 
+    const connectingLeadsGroup = new THREE.Group();
+    scene.add(connectingLeadsGroup);
     function addWire(points, color, radius = 0.035) {
       const curve = new THREE.CatmullRomCurve3(points.map((point) => new THREE.Vector3(...point)));
       const wire = new THREE.Mesh(
@@ -265,7 +271,7 @@
         standardMaterial(color, 0.31, 0.18),
       );
       wire.castShadow = true;
-      scene.add(wire);
+      connectingLeadsGroup.add(wire);
       return curve;
     }
 
@@ -302,9 +308,71 @@
     for (let index = 0; index < 7; index += 1) {
       const particle = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10), particleMaterial);
       particle.castShadow = true;
-      scene.add(particle);
+      connectingLeadsGroup.add(particle);
       particles.push(particle);
     }
+
+    const assemblyItems = [
+      { name: "DC power supply", group: powerSupply.group },
+      { name: "Rheostat", group: rheostatGroup },
+      { name: "10 Ω test resistor", group: resistorGroup },
+      { name: "Digital ammeter", group: ammeter.group },
+      { name: "Digital voltmeter", group: voltmeter.group },
+      { name: "Connecting leads", group: connectingLeadsGroup },
+    ];
+    const assemblyOrder = assemblyItems.map(({ name }) => name);
+    const assemblyButton = document.querySelector("#physics-assembly-toggle");
+    const assemblyStatus = document.querySelector("#physics-assembly-status");
+    const assemblyParts = document.querySelector("#physics-assembly-parts");
+    let assemblyIndex = 0;
+    let isAssembling = false;
+    const resetAssembly = () => {
+      assemblyItems.forEach(({ group }) => { group.visible = true; });
+      assemblyParts?.replaceChildren();
+      if (assemblyParts) assemblyParts.hidden = true;
+      isAssembling = false;
+      assemblyIndex = 0;
+      if (assemblyButton) assemblyButton.textContent = "Dismantle setup";
+      if (assemblyStatus) assemblyStatus.textContent = "Setup assembled. Dismantle it to begin the assembly challenge.";
+    };
+    assemblyButton?.addEventListener("click", () => {
+      if (isAssembling) {
+        resetAssembly();
+        return;
+      }
+      isAssembling = true;
+      assemblyIndex = 0;
+      assemblyItems.forEach(({ group }) => { group.visible = false; });
+      assemblyButton.textContent = "Reset setup";
+      assemblyParts.hidden = false;
+      assemblyParts.replaceChildren(...assemblyItems.slice().reverse().map(({ name, group }) => {
+        const part = document.createElement("button");
+        part.className = "assembly-part";
+        part.type = "button";
+        part.textContent = name;
+        part.addEventListener("click", () => {
+          if (name !== assemblyOrder[assemblyIndex]) {
+            assemblyStatus.textContent = `Place ${assemblyOrder[assemblyIndex]} first.`;
+            return;
+          }
+          group.visible = true;
+          part.disabled = true;
+          assemblyIndex += 1;
+          if (assemblyIndex === assemblyOrder.length) {
+            isAssembling = false;
+            assemblyParts.hidden = true;
+            assemblyButton.textContent = "Dismantle setup";
+            assemblyStatus.textContent = "Setup assembled correctly. Dismantle it to try again.";
+          } else {
+            assemblyStatus.textContent = `${assemblyIndex} of ${assemblyOrder.length} parts placed. Next: ${assemblyOrder[assemblyIndex]}.`;
+          }
+        });
+        return part;
+      }));
+      assemblyStatus.textContent = `Setup dismantled. Place ${assemblyOrder[0]} first.`;
+    });
+    if (assemblyButton) assemblyButton.disabled = false;
+    if (assemblyStatus) assemblyStatus.textContent = "Setup assembled. Dismantle it to begin the assembly challenge.";
 
     function setCamera(aspect = canvas.clientWidth / Math.max(canvas.clientHeight, 1)) {
       camera.aspect = aspect;

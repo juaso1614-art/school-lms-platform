@@ -155,6 +155,66 @@
   border-radius: 50%;
   background: #39a76b;
 }
+.assembly-station {
+  padding: 14px 19px;
+  border-top: 1px solid #e7eeeb;
+  background: #f7faf8;
+}
+
+.assembly-station-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.assembly-station h3 {
+  margin: 2px 0 0;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.assembly-station > p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.assembly-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.assembly-parts[hidden] {
+  display: none;
+}
+
+.assembly-part {
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #b9ccc0;
+  border-radius: 4px;
+  color: #27553f;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.assembly-part:hover:not(:disabled),
+.assembly-part:focus-visible {
+  border-color: #398960;
+  background: #edf6ef;
+}
+
+.assembly-part:disabled {
+  color: #687a70;
+  background: #e8eeea;
+  cursor: default;
+}
+
 
 .lab-studio {
   overflow: hidden;

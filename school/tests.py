@@ -98,6 +98,8 @@ class PortalTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["practicals"]), 5)
         self.assertContains(response, 'id="physics-practical-choice"')
+        self.assertContains(response, 'id="physics-assembly-toggle"')
+        self.assertContains(response, 'id="physics-assembly-parts"')
 
     def test_electrical_lab_offers_five_exercises(self):
         session = self.client.session
@@ -133,6 +135,8 @@ class PortalTests(TestCase):
                 self.assertContains(response, 'class="practical-lesson-steps"')
                 self.assertEqual(len(response.context["lab"]["practicals"]), 5)
                 self.assertContains(response, 'id="practical-choice"')
+                self.assertContains(response, 'id="toggle-assembly"')
+                self.assertContains(response, 'id="assembly-parts"')
                 if slug == "agriculture":
                     self.assertContains(response, 'id="agriculture-result"')
 

@@ -438,6 +438,81 @@
       });
     }
 
+    const assemblyPlans = {
+      terrain: ["topographic model", "weather station", "rain gauge & field compass", "globe"],
+      language: ["vocabulary cards", "listening console", "studio microphone", "studio headphones"],
+      computer: ["computer workstation", "binary logic board", "network switch & test meter"],
+      music: ["digital piano", "drum pads & metronome", "mixing console & headphones"],
+      biology: ["compound microscope", "specimen slides & cell models", "digital imaging display"],
+      chemistry: ["fume hood", "burette & retort stand", "glassware & solutions", "pH meter & indicator station"],
+      agriculture: ["crop beds & drip irrigation", "soil samples & crop monitor"],
+    };
+    const assemblyButton = document.querySelector("#toggle-assembly");
+    const assemblyParts = document.querySelector("#assembly-parts");
+    const assemblyStatus = document.querySelector("#assembly-status");
+    let assemblyIndex = 0;
+    let isAssembling = false;
+
+    const setSetupVisible = (visible) => equipment.forEach(({ group }) => {
+      group.visible = visible;
+    });
+    const resetSetup = () => {
+      setSetupVisible(true);
+      assemblyParts?.replaceChildren();
+      if (assemblyParts) assemblyParts.hidden = true;
+      isAssembling = false;
+      assemblyIndex = 0;
+      if (assemblyButton) assemblyButton.textContent = "Dismantle setup";
+      if (assemblyStatus) assemblyStatus.textContent = "Setup assembled. Dismantle it to begin the assembly challenge.";
+      render();
+    };
+
+    assemblyButton?.addEventListener("click", () => {
+      if (isAssembling) {
+        resetSetup();
+        return;
+      }
+      isAssembling = true;
+      assemblyIndex = 0;
+      setSetupVisible(false);
+      if (assemblyButton) assemblyButton.textContent = "Reset setup";
+      if (assemblyParts) {
+        assemblyParts.hidden = false;
+        assemblyParts.replaceChildren(...equipment.slice().reverse().map(({ name, group }) => {
+          const part = document.createElement("button");
+          part.className = "assembly-part";
+          part.type = "button";
+          part.textContent = name;
+          part.addEventListener("click", () => {
+            const expectedName = assemblyPlans[lab.scene]?.[assemblyIndex];
+            if (name !== expectedName) {
+              if (assemblyStatus) assemblyStatus.textContent = `Place ${expectedName} first.`;
+              return;
+            }
+            group.visible = true;
+            part.disabled = true;
+            assemblyIndex += 1;
+            const plan = assemblyPlans[lab.scene] || [];
+            if (assemblyIndex === plan.length) {
+              isAssembling = false;
+              assemblyParts.hidden = true;
+              if (assemblyButton) assemblyButton.textContent = "Dismantle setup";
+              if (assemblyStatus) assemblyStatus.textContent = "Setup assembled correctly. Dismantle it to try again.";
+            } else if (assemblyStatus) {
+              assemblyStatus.textContent = `${assemblyIndex} of ${plan.length} parts placed. Next: ${plan[assemblyIndex]}.`;
+            }
+            render();
+          });
+          return part;
+        }));
+      }
+      const plan = assemblyPlans[lab.scene] || [];
+      if (assemblyStatus) assemblyStatus.textContent = `Setup dismantled. Place ${plan[0]} first.`;
+      render();
+    });
+    if (assemblyButton) assemblyButton.disabled = false;
+    if (assemblyStatus) assemblyStatus.textContent = "Setup assembled. Dismantle it to begin the assembly challenge.";
+
     const resetCamera = () => {
       const aspect = canvas.clientWidth / Math.max(canvas.clientHeight, 1);
       camera.aspect = aspect;

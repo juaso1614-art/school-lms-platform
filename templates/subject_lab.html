@@ -25,6 +25,14 @@
         <p class="studio-status" id="scene-status" role="status" aria-live="polite">Loading 3D studio…</p>
         <div class="scene-caption" id="scene-caption" aria-live="polite">{{ lab.room }}</div>
       </div>
+      <section class="assembly-station" aria-labelledby="assembly-heading">
+        <div class="assembly-station-header">
+          <div><span class="eyebrow">Hands-on setup</span><h3 id="assembly-heading">Dismantle and assemble</h3></div>
+          <button class="btn btn-light" type="button" id="toggle-assembly" disabled>Dismantle setup</button>
+        </div>
+        <p id="assembly-status" role="status" aria-live="polite">Preparing the equipment challenge…</p>
+        <div class="assembly-parts" id="assembly-parts" role="group" aria-label="Equipment parts" hidden></div>
+      </section>
       <div class="equipment-strip" aria-label="Equipment in this virtual lab">
         {% for item in lab.equipment %}<span><i></i>{{ item }}</span>{% endfor %}
       </div>

@@ -1657,6 +1657,63 @@ textarea:focus {
   padding: 0;
 }
 
+.physics-assembly {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 14px 18px;
+  border-block: 1px solid #e0e8e3;
+  background: #f7faf8;
+}
+
+.physics-assembly h3 {
+  margin: 2px 0 0;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.physics-assembly > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.physics-assembly .assembly-parts {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.physics-assembly .assembly-parts[hidden] { display: none; }
+
+.physics-assembly .assembly-part {
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #b9ccc0;
+  border-radius: 4px;
+  color: #27553f;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.physics-assembly .assembly-part:hover:not(:disabled),
+.physics-assembly .assembly-part:focus-visible {
+  border-color: #398960;
+  background: #edf6ef;
+}
+
+.physics-assembly .assembly-part:disabled {
+  color: #687a70;
+  background: #e8eeea;
+  cursor: default;
+}
+
 .lab-bench-heading,
 .results-heading {
   display: flex;
@@ -1815,6 +1872,15 @@ textarea:focus {
   .lab-bench-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .physics-assembly {
+    grid-template-columns: 1fr;
+  }
+
+  .physics-assembly > p,
+  .physics-assembly .assembly-parts {
+    grid-column: auto;
   }
 
   .lab-scene-actions {
