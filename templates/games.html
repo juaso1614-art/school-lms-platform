@@ -39,6 +39,12 @@
         </div>
         <div class="game-topic-action">
           {% if topic.level_one_questions %}<a class="btn btn-primary" href="{% url 'game_play' topic.pk %}">Play</a>{% else %}<span class="game-topic-unavailable">Level 1 being prepared</span>{% endif %}
+          {% if topic.total_questions %}
+          <div class="game-format-links" aria-label="Other ways to play this topic">
+            <a class="game-format" href="{% url 'game_play' topic.pk %}?mode=flashcards">🃏 Flashcards</a>
+            {% if topic.total_questions >= 2 %}<a class="game-format" href="{% url 'game_play' topic.pk %}?mode=matching">🧩 Matching</a>{% endif %}
+          </div>
+          {% endif %}
           {% if is_staff %}<a class="game-manage-link" href="{% url 'games_author' %}?topic={{ topic.pk }}">Edit questions</a>{% endif %}
         </div>
       </article>

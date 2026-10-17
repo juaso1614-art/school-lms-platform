@@ -25,12 +25,15 @@
         <p class="studio-status" id="scene-status" role="status" aria-live="polite">Loading 3D studio…</p>
         <div class="scene-caption" id="scene-caption" aria-live="polite">{{ lab.room }}</div>
       </div>
+      <p class="lab-scene-tip">Tap any piece of equipment in the 3D view to inspect it — the part glows and its role appears below.</p>
+      <div class="lab-part-info" id="lab-part-info" role="status" aria-live="polite"></div>
       <section class="assembly-station" aria-labelledby="assembly-heading">
         <div class="assembly-station-header">
           <div><span class="eyebrow">Hands-on setup</span><h3 id="assembly-heading">Dismantle and assemble</h3></div>
           <button class="btn btn-light" type="button" id="toggle-assembly" disabled>Dismantle setup</button>
         </div>
         <p id="assembly-status" role="status" aria-live="polite">Preparing the equipment challenge…</p>
+        <div class="assembly-dropzone" id="assembly-dropzone" hidden>Drag parts here to rebuild the setup — tap a part if dragging is awkward.</div>
         <div class="assembly-parts" id="assembly-parts" role="group" aria-label="Equipment parts" hidden></div>
       </section>
       <div class="equipment-strip" aria-label="Equipment in this virtual lab">
@@ -86,5 +89,6 @@
   </div>
 </section>
 {{ lab|json_script:"lab-data" }}
+<script src="/static/lab-interactions.js" defer></script>
 <script src="/static/subject-labs.js" defer></script>
 {% endblock %}

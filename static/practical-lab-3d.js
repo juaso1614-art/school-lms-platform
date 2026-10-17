@@ -324,52 +324,56 @@
     const assemblyButton = document.querySelector("#physics-assembly-toggle");
     const assemblyStatus = document.querySelector("#physics-assembly-status");
     const assemblyParts = document.querySelector("#physics-assembly-parts");
-    let assemblyIndex = 0;
-    let isAssembling = false;
-    const resetAssembly = () => {
-      assemblyItems.forEach(({ group }) => { group.visible = true; });
-      assemblyParts?.replaceChildren();
-      if (assemblyParts) assemblyParts.hidden = true;
-      isAssembling = false;
-      assemblyIndex = 0;
-      if (assemblyButton) assemblyButton.textContent = "Dismantle setup";
+    assemblyItems.forEach(({ name, group }) => { group.userData.partName = name; });
+    const assemblyDropZone = document.querySelector("#physics-assembly-dropzone");
+    const partInfo = document.querySelector("#lab-part-info");
+    const partDescriptions = {
+      "DC power supply": "Provides the 3.0 V direct-current output for the circuit. Its dials set the supply voltage.",
+      "Rheostat": "A slide rheostat rated 0–25 Ω. Move its slider to change the series resistance and watch both meters respond.",
+      "10 Ω test resistor": "A colour-banded carbon resistor fixed at 10 Ω. The voltmeter reads the potential difference across it.",
+      "Digital ammeter": "Measures the series current, so it is wired in series between the rheostat and the supply.",
+      "Digital voltmeter": "Measures the potential difference across the test resistor, so it is wired in parallel with it.",
+      "Connecting leads": "Complete the loop: supply, rheostat, resistor, ammeter, and back to the supply.",
+    };
+    const inspector = window.PeakLabInteractions?.initInspector({
+      THREE,
+      canvas,
+      camera,
+      parts: assemblyItems.map(({ name, group }) => ({
+        name,
+        group,
+        description: partDescriptions[name],
+      })),
+      infoPanel: partInfo,
+    });
+    const assembly = window.PeakLabInteractions?.initAssembly({
+      partsHost: assemblyParts,
+      dropZone: assemblyDropZone,
+      statusEl: assemblyStatus,
+      order: assemblyOrder,
+      onPlace: (name) => {
+        const item = assemblyItems.find((part) => part.name === name);
+        if (item) item.group.visible = true;
+      },
+    });
+    const showAssembledState = () => {
+      if (!assemblyButton) return;
+      assemblyButton.textContent = "Dismantle setup";
       if (assemblyStatus) assemblyStatus.textContent = "Setup assembled. Dismantle it to begin the assembly challenge.";
     };
     assemblyButton?.addEventListener("click", () => {
-      if (isAssembling) {
-        resetAssembly();
-        return;
+      if (!assembly) return;
+      if (assembly.active) {
+        assemblyItems.forEach(({ group }) => { group.visible = true; });
+        assembly.leave();
+        assemblyDropZone.hidden = true;
+        showAssembledState();
+      } else {
+        assemblyItems.forEach(({ group }) => { group.visible = false; });
+        inspector?.inspect(null);
+        assemblyButton.textContent = "Reset setup";
+        assembly.enter();
       }
-      isAssembling = true;
-      assemblyIndex = 0;
-      assemblyItems.forEach(({ group }) => { group.visible = false; });
-      assemblyButton.textContent = "Reset setup";
-      assemblyParts.hidden = false;
-      assemblyParts.replaceChildren(...assemblyItems.slice().reverse().map(({ name, group }) => {
-        const part = document.createElement("button");
-        part.className = "assembly-part";
-        part.type = "button";
-        part.textContent = name;
-        part.addEventListener("click", () => {
-          if (name !== assemblyOrder[assemblyIndex]) {
-            assemblyStatus.textContent = `Place ${assemblyOrder[assemblyIndex]} first.`;
-            return;
-          }
-          group.visible = true;
-          part.disabled = true;
-          assemblyIndex += 1;
-          if (assemblyIndex === assemblyOrder.length) {
-            isAssembling = false;
-            assemblyParts.hidden = true;
-            assemblyButton.textContent = "Dismantle setup";
-            assemblyStatus.textContent = "Setup assembled correctly. Dismantle it to try again.";
-          } else {
-            assemblyStatus.textContent = `${assemblyIndex} of ${assemblyOrder.length} parts placed. Next: ${assemblyOrder[assemblyIndex]}.`;
-          }
-        });
-        return part;
-      }));
-      assemblyStatus.textContent = `Setup dismantled. Place ${assemblyOrder[0]} first.`;
     });
     if (assemblyButton) assemblyButton.disabled = false;
     if (assemblyStatus) assemblyStatus.textContent = "Setup assembled. Dismantle it to begin the assembly challenge.";
@@ -396,22 +400,52 @@
 
     let dragging = false;
     let previousPointer = null;
+    let pressPosition = null;
+    let pinchDistance = null;
+    const activePointers = new Map();
     canvas.addEventListener("pointerdown", (event) => {
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (activePointers.size === 2) {
+        const [first, second] = [...activePointers.values()];
+        pinchDistance = Math.hypot(first.x - second.x, first.y - second.y);
+        dragging = false;
+        previousPointer = null;
+        return;
+      }
       dragging = true;
+      pressPosition = { x: event.clientX, y: event.clientY };
       previousPointer = { x: event.clientX, y: event.clientY };
       canvas.setPointerCapture(event.pointerId);
       canvas.classList.add("is-dragging");
     });
     canvas.addEventListener("pointermove", (event) => {
+      if (activePointers.has(event.pointerId)) {
+        activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      }
+      if (pinchDistance !== null && activePointers.size === 2) {
+        const [first, second] = [...activePointers.values()];
+        const newDistance = Math.hypot(first.x - second.x, first.y - second.y);
+        distance = THREE.MathUtils.clamp(distance - (newDistance - pinchDistance) * 0.03, 10.5, 23);
+        pinchDistance = newDistance;
+        setCamera();
+        return;
+      }
       if (!dragging || !previousPointer) return;
       yaw -= (event.clientX - previousPointer.x) * 0.006;
       pitch = THREE.MathUtils.clamp(pitch + (event.clientY - previousPointer.y) * 0.004, 0.18, 1.05);
       previousPointer = { x: event.clientX, y: event.clientY };
       setCamera();
     });
-    const endDrag = () => {
+    const endDrag = (event) => {
+      activePointers.delete(event.pointerId);
+      if (activePointers.size < 2) pinchDistance = null;
+      if (dragging && pressPosition) {
+        const moved = Math.hypot(event.clientX - pressPosition.x, event.clientY - pressPosition.y);
+        if (moved < 5) inspector?.inspect(inspector.pick(event));
+      }
       dragging = false;
       previousPointer = null;
+      pressPosition = null;
       canvas.classList.remove("is-dragging");
     };
     canvas.addEventListener("pointerup", endDrag);
@@ -458,6 +492,7 @@
         const progress = reduceMotion ? index / particles.length : (elapsed * 0.11 + index / particles.length) % 1;
         particle.position.copy(currentCurve.getPointAt(progress));
       });
+      inspector?.pulse(elapsed);
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }

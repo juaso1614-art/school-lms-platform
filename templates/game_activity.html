@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ mode_title }} · {{ topic.title }} | Games Corner{% endblock %}
+{% block content %}
+<section class="page-section games-page"><div class="container game-play-shell">
+  <a class="game-back-link" href="{% url 'games' %}?grade={{ topic.subject.grade_level }}&subject={{ topic.subject_id }}">Games Corner / {{ topic.subject.name }}</a>
+  <div class="game-play-heading"><span class="eyebrow">{{ topic.subject.grade_level }} · {{ topic.subject.name }} · {{ mode_title }}</span><h2>{{ topic.title }}</h2>{% if topic.description %}<p>{{ topic.description }}</p>{% endif %}</div>
+
+  <section class="game-activity-bar" aria-label="Activity progress">
+    <span class="game-score" id="activity-score">{{ progress.score }} pts</span>
+    <div class="game-level-track" id="activity-progress-track" aria-label="Cards completed"></div>
+    <a class="btn btn-light" href="{% url 'game_play' topic.pk %}">Switch to quiz</a>
+  </section>
+
+  {% if mode == 'flashcards' %}
+  <section class="game-question-panel flashcard-panel" aria-label="Flashcard deck">
+    <div class="flashcard" id="flashcard" tabindex="0" role="button" aria-label="Flashcard — activate to flip">
+      <div class="flashcard-face flashcard-front"><span class="eyebrow">Prompt</span><p id="flashcard-prompt"></p><span class="flashcard-hint">Tap to reveal</span></div>
+      <div class="flashcard-face flashcard-back"><span class="eyebrow">Answer</span><p id="flashcard-answer"></p><p class="flashcard-explanation" id="flashcard-explanation"></p></div>
+    </div>
+    <div class="flashcard-controls">
+      <button class="btn btn-light" type="button" id="flashcard-prev">← Previous</button>
+      <span class="game-question-count" id="flashcard-count">Card 1</span>
+      <button class="btn btn-primary" type="button" id="flashcard-next">Next →</button>
+    </div>
+    <p class="flashcard-tip">Flip every card to finish the deck and record your score.</p>
+  </section>
+  {% else %}
+  <section class="game-question-panel matching-panel" aria-label="Matching game">
+    <p class="game-matching-help">Tap a prompt on the left, then tap the matching answer on the right.</p>
+    <div class="matching-board">
+      <ul class="matching-column" id="matching-prompts" aria-label="Prompts"></ul>
+      <ul class="matching-column" id="matching-answers" aria-label="Answers"></ul>
+    </div>
+    <div class="game-matching-meter"><span id="matching-paired">0 of 0 matched</span><span class="game-metric" id="matching-misses">0 misses</span></div>
+  </section>
+  {% endif %}
+
+  <section class="game-complete-panel game-activity-done" id="activity-done" hidden>
+    <span class="game-complete-mark">✓</span><span class="eyebrow">{{ mode_title }} complete</span>
+    <h3>Well played!</h3>
+    <p id="activity-done-summary"></p>
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="action" value="activity-complete">
+      <input type="hidden" name="mode" value="{{ mode }}">
+      <input type="hidden" name="score" id="activity-done-score" value="0">
+      <input type="hidden" name="attempts" id="activity-done-attempts" value="1">
+      <button class="btn btn-primary" type="submit">Save my score</button>
+    </form>
+  </section>
+</div></section>
+{{ cards|json_script:"game-activity-data" }}
+<script src="/static/games-activities.js" defer></script>
+{% endblock %}
